@@ -1,0 +1,41 @@
+---
+version: '3'
+
+#-----------------------------------------------------------------------------------------
+# ENVIRONMENT VARIABLES CONFIGURATION
+# ----------------------------------
+# - These variables are used to configure the environment for the task.
+# - It's set while calling the task. E.g.: ENV=master task <task_name>
+# - Remember to generate the .env.<env>.aws or .env.<env>.terraform previously.
+#-----------------------------------------------------------------------------------------
+env:
+    ENV: '{{.ENV}}'
+
+vars:
+    MODULE: '{{default "default" .MODULE}}'
+    RECIPE: '{{default "basic" .RECIPE}}'
+    VARS: '{{default "config/fixtures.tfvars" .VARS}}'
+
+dotenv: ['.env.{{.ENV}}.aws', '.env.{{.ENV}}.terraform', '.env.{{.ENV}}.terragrunt']
+
+includes:
+    common:
+        taskfile: ./taskfiles/Taskfile.common.yml
+
+    hooks:
+        taskfile: ./taskfiles/Taskfile.precommit.yml
+
+tasks:
+    default:
+        cmds:
+            - task: common:default
+
+    hooks-init:
+        desc: Initialize and install required hooks
+        cmds:
+            - task: hooks:hooks-init
+
+    hooks-run:
+        desc: Run all the hooks described in the .pre-commit-config.yaml file
+        cmds:
+            - task: hooks:hooks-run

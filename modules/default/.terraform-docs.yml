@@ -1,0 +1,70 @@
+---
+formatter: markdown table
+
+header-from: main.tf
+content: |-
+    # ☁️ AWS SSM Parameter Store
+    ## Description
+    {{ .Header }}
+
+    This module manages an AWS SSM Parameter, a simple storage service for configuration data management and secrets. Capabilities of this module include:
+
+    * 🚀 **Name** - The name of the parameter.
+    * 🚀 **Type** - The type of the parameter - "String", "StringList" or "SecureString".
+    * 🚀 **Value** - The value of the parameter.
+    * 🚀 **Key-ID** - The KMS Key ID to use when encrypting the value of a SecureString.
+    * 🚀 **Overwrite** - Overwrite an existing parameter. Default is `false`.
+    * 🚀 **Tags** - A mapping of tags to assign to the object.
+
+      ---
+      ## Example
+      Examples of this module's usage are available in the [examples](./examples) folder.
+
+      ```hcl
+      {{ include "../../../examples/ssm/ssm-parameter-store/basic/main.tf" }}
+      ```
+
+      Simple recipe:
+      ```hcl
+      {{ include "../../../examples/ssm/ssm-parameter-store/basic/config/fixtures.tfvars" }}
+      ```
+
+      Multiple parameters.
+      ```hcl
+      {{ include "../../../examples/ssm/ssm-parameter-store/basic/config/fixtures-multiple-parameters.tfvars" }}
+      ```
+
+      JSON values
+      ```hcl
+      {{ include "../../../examples/ssm/ssm-parameter-store/basic/config/fixtures-json.tfvars" }}
+      ```
+      For module composition, It's recommended to take a look at the module's `outputs` to understand what's available:
+      ```hcl
+      {{ include "outputs.tf" }}
+      ```
+      ---
+
+      ## Module's documentation
+      (This documentation is auto-generated using [terraform-docs](https://terraform-docs.io))
+      {{ .Providers }}
+
+      {{ .Modules }}
+
+      {{ .Resources }}
+
+      {{ .Requirements }}
+
+      {{ .Inputs }}
+
+      {{ .Outputs }}
+
+output:
+    file: README.md
+    mode: inject
+    template: |-
+        <!-- BEGIN_TF_DOCS -->
+        {{ .Content }}
+        <!-- END_TF_DOCS -->
+settings:
+    anchor: true
+    color: true

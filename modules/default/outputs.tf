@@ -18,3 +18,7 @@ output "tags_set" {
 Custom outputs
 -------------------------------------
 */
+output "module_config" {
+  value       = local.parameters_cfg_create
+  description = "The module configuration."
+}

@@ -1,19 +1,11 @@
 ---
 version: '3'
-
-#-----------------------------------------------------------------------------------------
-# ENVIRONMENT VARIABLES CONFIGURATION
-# ----------------------------------
-# - These variables are used to configure the environment for the task.
-# - It's set while calling the task. E.g.: ENV=master task <task_name>
-# - Remember to generate the .env.<env>.aws or .env.<env>.terraform previously.
-#-----------------------------------------------------------------------------------------
 env:
     ENV: '{{.ENV}}'
 
 vars:
     MODULE: '{{default "default" .MODULE}}'
-    RECIPE: '{{default "basic" .RECIPE}}'
+    EXAMPLE: '{{default "basic" .RECIPE}}'
     VARS: '{{default "config/fixtures.tfvars" .VARS}}'
 
 dotenv: ['.env.{{.ENV}}.aws', '.env.{{.ENV}}.terraform', '.env.{{.ENV}}.terragrunt']
@@ -21,9 +13,10 @@ dotenv: ['.env.{{.ENV}}.aws', '.env.{{.ENV}}.terraform', '.env.{{.ENV}}.terragru
 includes:
     common:
         taskfile: ./taskfiles/Taskfile.common.yml
-
     hooks:
         taskfile: ./taskfiles/Taskfile.precommit.yml
+    tf:
+        taskfile: ./taskfiles/Taskfile.terraform.yml
 
 tasks:
     default:
@@ -39,3 +32,25 @@ tasks:
         desc: Run all the hooks described in the .pre-commit-config.yaml file
         cmds:
             - task: hooks:hooks-run
+
+    tf-module-init:
+        desc: Initialize the terraform module
+        cmds:
+            - task: common:clean
+            - task: tf:init
+              vars: {TF_WORKING_DIR: 'modules/{{.MODULE}}'}
+
+    tf-module-ci:
+        desc: Run CI tasks for the terraform module
+        cmds:
+            - task: common:clean
+            - task: tf:init
+              vars: {TF_WORKING_DIR: 'modules/{{.MODULE}}'}
+            - task: tf:validate
+              vars: {TF_WORKING_DIR: 'modules/{{.MODULE}}'}
+            - task: tf:fmt-fix
+              vars: {TF_WORKING_DIR: 'modules/{{.MODULE}}'}
+            - task: tf:lint
+              vars: {TF_WORKING_DIR: 'modules/{{.MODULE}}'}
+            - task: tf:docs
+              vars: {TF_WORKING_DIR: 'modules/{{.MODULE}}'}

@@ -84,3 +84,29 @@ _made/with_ ❤️  🤟
 <!-- References -->
 [LICENSE]: ./LICENSE
 [badge-license]: https://img.shields.io/badge/license-Apache%202.0-brightgreen.svg
+
+<!-- BEGIN_TF_DOCS -->
+## Requirements
+
+No requirements.
+
+## Providers
+
+No providers.
+
+## Modules
+
+No modules.
+
+## Resources
+
+No resources.
+
+## Inputs
+
+No inputs.
+
+## Outputs
+
+No outputs.
+<!-- END_TF_DOCS -->

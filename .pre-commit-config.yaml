@@ -71,3 +71,15 @@ repos:
             files: ^modules/.*\.tf$
             args:
                 - --args=--config=.tflint.hcl
+
+    - repo: https://github.com/terraform-docs/terraform-docs
+      rev: v0.16.0
+      hooks:
+          - id: terraform-docs-go
+            files: ^modules/.*/.*\.tf$
+            entry: sh -c 'for d in modules/*; do if [ -d "$d" ]; then cd "$d" && terraform-docs --config .terraform-docs.yml . > README.md; fi; done'
+            language: system
+          - id: terraform-docs-go
+            entry: sh -c 'for d in examples/*/*; do if [ -d "$d" ] && [ -f "$d/.terraform-docs.yml" ]; then (cd "$d" && terraform-docs .); fi; done'
+            language: system
+            files: ^examples/.*/.*/.*\.tf$

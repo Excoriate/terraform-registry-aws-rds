@@ -77,7 +77,8 @@ repos:
       hooks:
           - id: terraform-docs-go
             files: ^modules/.*/.*\.tf$
-            entry: sh -c 'for d in modules/*; do if [ -d "$d" ]; then cd "$d" && terraform-docs --config .terraform-docs.yml . > README.md; fi; done'
+            entry: sh -c 'for d in modules/*; do [ -d "$d" ] && terraform-docs markdown --config "$d/.terraform-docs.yml" --output-file "$d/README.md" --output-mode
+                inject . || echo "Skipping $d, no .terraform-docs.yml found"; done'
             language: system
           - id: terraform-docs-go
             entry: sh -c 'for d in examples/*/*; do if [ -d "$d" ] && [ -f "$d/.terraform-docs.yml" ]; then (cd "$d" && terraform-docs .); fi; done'

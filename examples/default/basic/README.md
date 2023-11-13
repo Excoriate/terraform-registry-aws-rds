@@ -1,5 +1,3 @@
-README.md updated successfully
-
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
 

@@ -23,3 +23,14 @@ func CleanSliceFromValuesThatAreEmpty(slice []string) []string {
 	}
 	return cleaned
 }
+
+func MisSlices(slices ...[]string) []string {
+	var mixed []string
+	for _, slice := range slices {
+		if slice == nil {
+			continue
+		}
+		mixed = append(mixed, slice...)
+	}
+	return mixed
+}

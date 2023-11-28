@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"path/filepath"
 
+	"github.com/Excoriate/terraform-registry-aws-rds/pkg/config"
+
 	"github.com/Excoriate/terraform-registry-aws-rds/pkg/errors"
 
 	"dagger.io/dagger"
@@ -16,14 +18,12 @@ type DirConfig struct {
 	WorkDirPathInContainer string
 }
 
-const mountPathPrefix = "/mnt"
-
 // getDirs returns the mount directory, and the work directory.
 // The mount directory is the directory that is mounted in the container.
 // The work directory is the directory that is used by the commands passed.
 func getDirs(client *dagger.Client, mountDir, workDir string) *DirConfig {
 	mountDirDagger := client.Host().Directory(mountDir)
-	workDirPathInContainer := fmt.Sprintf("%s/%s", mountPathPrefix, filepath.Clean(workDir))
+	workDirPathInContainer := fmt.Sprintf("%s/%s", config.MountPathPrefixInDagger, filepath.Clean(workDir))
 
 	return &DirConfig{
 		MountDir:               mountDirDagger,

@@ -6,6 +6,8 @@ import (
 	"io"
 	"os"
 
+	"github.com/Excoriate/terraform-registry-aws-rds/pkg/commands"
+
 	"github.com/Excoriate/terraform-registry-aws-rds/pkg/errors"
 
 	"dagger.io/dagger"
@@ -31,12 +33,14 @@ type Client struct {
 }
 
 type ClientConfigOptions struct {
-	Image    string
-	Version  string
-	EnvVars  map[string]string
-	Workdir  string
-	MountDir string
-	CMDs     [][]string
+	Image        string
+	Version      string
+	EnvVars      map[string]string
+	Workdir      string
+	MountDir     string
+	ExcludedDirs []string
+	// CMDs     [][]string
+	CMDs commands.CMDs
 }
 
 type Core interface {
@@ -148,11 +152,19 @@ func (p *Client) Configure(options *ClientConfigOptions) (*dagger.Container, err
 	})
 
 	if err != nil {
-		return nil, err
+		return nil, &errors.ErrTerraDaggerConfigurationError{
+			ErrWrapped: err,
+			Details:    "the container could not be created",
+		}
 	}
 
-	container = tdContainer.withDirs(container, dirs.MountDir, dirs.WorkDirPathInContainer)
-	container = tdContainer.withCommands(container, options.CMDs)
+	if len(options.ExcludedDirs) > 0 {
+		p.Logger.Info(fmt.Sprintf("These directories were passed explicitly to be excluded: %v", options.ExcludedDirs))
+	}
+
+	container = tdContainer.withDirs(container, dirs.MountDir, dirs.WorkDirPathInContainer,
+		options.ExcludedDirs)
+	container = tdContainer.withCommands(container, options.CMDs[0])
 
 	if len(options.EnvVars) > 0 {
 		container = tdContainer.withEnvVars(container, options.EnvVars)

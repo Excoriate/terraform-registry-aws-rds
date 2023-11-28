@@ -3,6 +3,10 @@ package terradagger
 import (
 	"fmt"
 
+	"github.com/Excoriate/terraform-registry-aws-rds/pkg/config"
+
+	"github.com/Excoriate/terraform-registry-aws-rds/pkg/utils"
+
 	"github.com/Excoriate/terraform-registry-aws-rds/pkg/errors"
 
 	"dagger.io/dagger"
@@ -62,9 +66,12 @@ func (c *Container) create(options *NewContainerOptions) (*dagger.Container, err
 }
 
 func (c *Container) withDirs(container *dagger.Container, mountDir *dagger.Directory,
-	workDirPath string) *dagger.Container {
-	// container = container.WithMountedDirectory(mountPathPrefix, mountDir)
-	container = container.WithDirectory(mountPathPrefix, mountDir)
+	workDirPath string, excludeDirsExtra []string) *dagger.Container {
+
+	container = container.WithDirectory(config.MountPathPrefixInDagger, mountDir,
+		dagger.ContainerWithDirectoryOpts{
+			Exclude: utils.MisSlices(config.ExcludedDirsDefault, config.ExcludedDirsTerraform, excludeDirsExtra),
+		})
 	container = container.WithWorkdir(workDirPath)
 
 	return container

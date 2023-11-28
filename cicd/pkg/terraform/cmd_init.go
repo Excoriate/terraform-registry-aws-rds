@@ -58,12 +58,12 @@ func Init(td *terradagger.Client, options *Options, initOptions *InitOptions) er
 
 	td.Logger.Info("All the options are valid, and the terraform init command can be started.")
 
-	tfCMD := commands.GetTerraformCommand("init", nil)
-	tfCMD.OmitBinaryNameInCommand = true
+	tfInitCMD := commands.GetTerraformCommand("init", nil)
+	tfInitCMD.OmitBinaryNameInCommand = true
 
 	if initOptions.NoColor {
 		td.Logger.Info("The option no-color is set to true")
-		tfCMD, _ = commands.AddArgsToCommand(tfCMD, []commands.Args{
+		tfInitCMD, _ = commands.AddArgsToCommand(tfInitCMD, []commands.Args{
 			{
 				Name:  "no-color",
 				Value: "",
@@ -73,7 +73,7 @@ func Init(td *terradagger.Client, options *Options, initOptions *InitOptions) er
 
 	if initOptions.BackendConfigFile != "" {
 		td.Logger.Info(fmt.Sprintf("The option backend-config is set to %s", initOptions.BackendConfigFile))
-		tfCMD, _ = commands.AddArgsToCommand(tfCMD, []commands.Args{
+		tfInitCMD, _ = commands.AddArgsToCommand(tfInitCMD, []commands.Args{
 			{
 				Name:  "backend-config",
 				Value: initOptions.BackendConfigFile,
@@ -83,7 +83,7 @@ func Init(td *terradagger.Client, options *Options, initOptions *InitOptions) er
 
 	if initOptions.Upgrade {
 		td.Logger.Info("The option upgrade is set to true")
-		tfCMD, _ = commands.AddArgsToCommand(tfCMD, []commands.Args{
+		tfInitCMD, _ = commands.AddArgsToCommand(tfInitCMD, []commands.Args{
 			{
 				Name:  "upgrade",
 				Value: "",
@@ -91,7 +91,13 @@ func Init(td *terradagger.Client, options *Options, initOptions *InitOptions) er
 		})
 	}
 
-	tfCMDDagger := commands.ConvertCommandToDaggerFormat(tfCMD)
+	// tfCMDDagger := commands.ConvertCommandToDaggerFormat(tfInitCMD)
+	cmds := []commands.Command{
+		tfInitCMD,
+	}
+
+	tfCMDDagger := commands.ConvertCommandsToDaggerFormat(cmds)
+
 	tfImage := resolveTerraformImage(options)
 	tfVersion := resolveTerraformVersion(options)
 

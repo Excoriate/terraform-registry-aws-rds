@@ -19,6 +19,8 @@ type Args struct {
 	Value string
 }
 
+type CMDs [][][]string
+
 // GetCommand returns the command as a slice of strings, ready to be executed.
 func (c *Command) GetCommand() []string {
 	var commandParts []string
@@ -63,8 +65,12 @@ func AddArgsToCommand(command Command, args []Args) (Command, error) {
 	return command, nil
 }
 
-// ConvertCommandToDaggerFormat converts a Command struct to a format suitable for Dagger's WithExec.
-func ConvertCommandToDaggerFormat(cmd Command) [][]string {
-	cleanedCommands := utils.CleanSliceFromValuesThatAreEmpty(cmd.GetCommand())
-	return [][]string{cleanedCommands}
+// ConvertCommandsToDaggerFormat converts a Command struct to a Dagger-compatible format.
+func ConvertCommandsToDaggerFormat(cmds []Command) CMDs {
+	var daggerCmds CMDs
+	for _, cmd := range cmds {
+		cleanedCommand := utils.CleanSliceFromValuesThatAreEmpty(cmd.GetCommand())
+		daggerCmds = append(daggerCmds, [][]string{cleanedCommand})
+	}
+	return daggerCmds
 }

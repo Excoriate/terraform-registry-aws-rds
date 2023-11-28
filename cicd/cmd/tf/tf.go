@@ -53,9 +53,7 @@ var Cmd = &cobra.Command{
 			TerraformDir: "modules/default",
 		}
 
-		_ = terraform.Init(td, terraformOptions, &terraform.InitOptions{
-			NoColor: true,
-		})
+		_ = terraform.Init(td, terraformOptions, nil)
 
 		_ = terraform.Plan(td, terraformOptions, nil)
 

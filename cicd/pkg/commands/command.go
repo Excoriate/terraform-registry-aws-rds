@@ -19,7 +19,18 @@ type Args struct {
 	Value string
 }
 
-type CMDs [][][]string
+func ConvertMapIntoTerraformVarsOption(sourceMap map[string]interface{}) ([]Args, error) {
+	var args []Args
+	for key, value := range sourceMap {
+		args = append(args, Args{
+			Name:  fmt.Sprintf("-var=%s=%v", key, value),
+			Value: "",
+		})
+	}
+	return args, nil
+}
+
+type TerraDaggerCMDs [][][]string
 
 // GetCommand returns the command as a slice of strings, ready to be executed.
 func (c *Command) GetCommand() []string {
@@ -66,8 +77,8 @@ func AddArgsToCommand(command Command, args []Args) (Command, error) {
 }
 
 // ConvertCommandsToDaggerFormat converts a Command struct to a Dagger-compatible format.
-func ConvertCommandsToDaggerFormat(cmds []Command) CMDs {
-	var daggerCmds CMDs
+func ConvertCommandsToDaggerFormat(cmds []Command) TerraDaggerCMDs {
+	var daggerCmds TerraDaggerCMDs
 	for _, cmd := range cmds {
 		cleanedCommand := utils.CleanSliceFromValuesThatAreEmpty(cmd.GetCommand())
 		daggerCmds = append(daggerCmds, [][]string{cleanedCommand})

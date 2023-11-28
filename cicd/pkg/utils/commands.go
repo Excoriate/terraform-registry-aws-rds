@@ -4,24 +4,11 @@ import (
 	"bytes"
 	"fmt"
 	"os/exec"
-
-	"github.com/google/shlex"
 )
 
 type Command struct {
 	Binary   string
 	Commands []string
-}
-
-// GetCommandStructured parses the job command and returns the arguments.
-func GetCommandStructured(cmd string) ([]string, error) {
-	args, err := shlex.Split(cmd)
-
-	if err != nil {
-		return nil, fmt.Errorf("could not parse the command: %s", err)
-	}
-
-	return args, nil
 }
 
 // RunCommand runs a command and returns the output.

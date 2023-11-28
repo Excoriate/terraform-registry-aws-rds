@@ -25,6 +25,10 @@ type OptionsValidator interface {
 	validate() error
 }
 
+type CommandOptionsValidator interface {
+	validateCMDOptions(terraformDir string) error
+}
+
 func (o *Options) validate() error {
 	if o.TerraformDir == "" {
 		return &errors.ErrTerraformOptionsAreInvalid{

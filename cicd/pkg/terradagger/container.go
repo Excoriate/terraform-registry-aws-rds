@@ -3,6 +3,8 @@ package terradagger
 import (
 	"fmt"
 
+	"github.com/Excoriate/terraform-registry-aws-rds/pkg/commands"
+
 	"github.com/Excoriate/terraform-registry-aws-rds/pkg/config"
 
 	"github.com/Excoriate/terraform-registry-aws-rds/pkg/utils"
@@ -77,9 +79,11 @@ func (c *Container) withDirs(container *dagger.Container, mountDir *dagger.Direc
 	return container
 }
 
-func (c *Container) withCommands(container *dagger.Container, commands [][]string) *dagger.Container {
-	for _, cmds := range commands {
-		container = container.WithExec(cmds)
+func (c *Container) withCommands(container *dagger.Container, cmds commands.TerraDaggerCMDs) *dagger.Container {
+	for _, cmds := range cmds {
+		for _, cmd := range cmds {
+			container = container.WithExec(cmd)
+		}
 	}
 
 	return container

@@ -1,23 +1,76 @@
 package terraform
 
 import (
+	"path/filepath"
+
 	"github.com/Excoriate/terraform-registry-aws-rds/pkg/commands"
 	"github.com/Excoriate/terraform-registry-aws-rds/pkg/errors"
 	"github.com/Excoriate/terraform-registry-aws-rds/pkg/terradagger"
+	"github.com/Excoriate/terraform-registry-aws-rds/pkg/utils"
 )
 
 type PlanOptions struct {
 	// VarFiles is a list of terraform var files to use when running terraform plan
 	VarFiles []string
 
-	// PlanFilePath is the path to save the plan file
-	PlanFilePath string
+	// PlanOutFilePath is the path to save the plan file
+	PlanOutFilePath string
 
 	// Vars is a map of terraform vars to use when running terraform plan
 	Vars map[string]interface{}
 }
 
-func (o *PlanOptions) validate() error {
+func (o *PlanOptions) validateCMDOptions(terraformDir string) error {
+	if o.VarFiles == nil {
+		o.VarFiles = []string{}
+	}
+
+	if o.Vars == nil {
+		o.Vars = map[string]interface{}{}
+	}
+
+	if o.PlanOutFilePath != "" {
+		planOutFilePath := filepath.Join(terraformDir, o.PlanOutFilePath)
+
+		if err := utils.FileExist(planOutFilePath); err != nil {
+			return &errors.ErrTerraformPlanFilePathIsInvalid{
+				ErrWrapped:   err,
+				PlanFilePath: o.PlanOutFilePath,
+				TerraformDir: terraformDir,
+			}
+		}
+
+		o.PlanOutFilePath = planOutFilePath
+	}
+
+	// Check each of the *.tfvars passed.
+	var varFilesNormalised []string
+	for _, varFile := range o.VarFiles {
+		varFilePath := filepath.Join(terraformDir, varFile)
+
+		if err := utils.FileExist(varFilePath); err != nil {
+			return &errors.ErrTerraformVarFileIsInvalid{
+				ErrWrapped:   err,
+				VarFilePath:  varFile,
+				TerraformDir: terraformDir,
+			}
+		}
+
+		// If the file doesn't have the .json or tfvars extension, fail.
+		if filepath.Ext(varFilePath) != ".json" && filepath.Ext(varFilePath) != ".tfvars" {
+			return &errors.ErrTerraformVarFileIsInvalid{
+				ErrWrapped:   nil,
+				VarFilePath:  varFile,
+				TerraformDir: terraformDir,
+			}
+		}
+
+		// Add it to the list of var files.
+		varFilesNormalised = append(varFilesNormalised, varFilePath)
+	}
+
+	o.VarFiles = varFilesNormalised
+
 	return nil
 }
 
@@ -37,7 +90,7 @@ func Plan(td *terradagger.Client, options *Options, planOptions *PlanOptions) er
 		}
 	}
 
-	if err := planOptions.validate(); err != nil {
+	if err := planOptions.validateCMDOptions(options.TerraformDir); err != nil {
 		return &errors.ErrTerraformPlanFailedToStart{
 			ErrWrapped: err,
 			Details:    "the plan options passed to the terraform command are invalid",
@@ -46,12 +99,23 @@ func Plan(td *terradagger.Client, options *Options, planOptions *PlanOptions) er
 
 	td.Logger.Info("All the options are valid, and the terraform plan command can be started.")
 
+	var varsAsArgs []commands.Args
+	if len(planOptions.Vars) > 0 {
+		args, err := commands.ConvertMapIntoTerraformVarsOption(planOptions.Vars)
+		if err != nil {
+			return &errors.ErrTerraformPlanFailedToStart{
+				ErrWrapped: err,
+				Details:    "the plan options passed to the terraform command are invalid",
+			}
+		}
+
+		varsAsArgs = args
+	}
+
 	tfInitCMD := commands.GetTerraformCommand("init", nil)
-	tfPlanCMD := commands.GetTerraformCommand("plan", nil)
+	tfPlanCMD := commands.GetTerraformCommand("plan", varsAsArgs)
 	tfInitCMD.OmitBinaryNameInCommand = true
 	tfPlanCMD.OmitBinaryNameInCommand = true
-
-	// Validate specific options.
 
 	// Convert to a terraDagger format, in this case, there are more than
 	// one command to run.
@@ -66,11 +130,11 @@ func Plan(td *terradagger.Client, options *Options, planOptions *PlanOptions) er
 
 	// Configuring the options.
 	tdOptions := &terradagger.ClientConfigOptions{
-		Image:    tfImage,
-		Version:  tfVersion,
-		Workdir:  options.TerraformDir,
-		MountDir: td.MountDir,
-		CMDs:     tfCMDDagger,
+		Image:           tfImage,
+		Version:         tfVersion,
+		Workdir:         options.TerraformDir,
+		MountDir:        td.MountDir,
+		TerraDaggerCMDs: tfCMDDagger,
 	}
 
 	tdOptions.EnvVars = resolveEnvVarsByOptions(options)

@@ -54,9 +54,12 @@ var Cmd = &cobra.Command{
 		}
 
 		_ = terraform.Init(td, terraformOptions, nil)
-
-		_ = terraform.Plan(td, terraformOptions, nil)
-
+		_ = terraform.Plan(td, terraformOptions, &terraform.PlanOptions{
+			Vars: map[string]interface{}{
+				"aws_region": "us-east-1",
+				"is_enabled": true,
+			},
+		})
 	},
 }
 

@@ -39,8 +39,8 @@ type ClientConfigOptions struct {
 	Workdir      string
 	MountDir     string
 	ExcludedDirs []string
-	// CMDs     [][]string
-	CMDs commands.CMDs
+	// TerraDaggerCMDs     [][]string
+	TerraDaggerCMDs commands.TerraDaggerCMDs
 }
 
 type Core interface {
@@ -164,7 +164,7 @@ func (p *Client) Configure(options *ClientConfigOptions) (*dagger.Container, err
 
 	container = tdContainer.withDirs(container, dirs.MountDir, dirs.WorkDirPathInContainer,
 		options.ExcludedDirs)
-	container = tdContainer.withCommands(container, options.CMDs[0])
+	container = tdContainer.withCommands(container, options.TerraDaggerCMDs)
 
 	if len(options.EnvVars) > 0 {
 		container = tdContainer.withEnvVars(container, options.EnvVars)

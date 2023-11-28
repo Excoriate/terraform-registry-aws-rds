@@ -41,3 +41,25 @@ func (e *ErrTerraformPlanFailedToStart) Error() string {
 	return fmt.Sprintf("Failed to start the terraform plan command: %s: %s",
 		e.Details, e.ErrWrapped)
 }
+
+type ErrTerraformPlanFilePathIsInvalid struct {
+	ErrWrapped   error
+	PlanFilePath string
+	TerraformDir string
+}
+
+func (e *ErrTerraformPlanFilePathIsInvalid) Error() string {
+	return fmt.Sprintf("The plan file path %s is invalid, or it does not exist in the terraform dir %s: %s",
+		e.PlanFilePath, e.TerraformDir, e.ErrWrapped)
+}
+
+type ErrTerraformVarFileIsInvalid struct {
+	ErrWrapped   error
+	VarFilePath  string
+	TerraformDir string
+}
+
+func (e *ErrTerraformVarFileIsInvalid) Error() string {
+	return fmt.Sprintf("The var file path %s is invalid, or it does not exist in the terraform dir %s: %s",
+		e.VarFilePath, e.TerraformDir, e.ErrWrapped)
+}

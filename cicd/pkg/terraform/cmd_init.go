@@ -2,6 +2,7 @@ package terraform
 
 import (
 	"fmt"
+	"path/filepath"
 
 	"github.com/Excoriate/terraform-registry-aws-rds/pkg/utils"
 
@@ -19,14 +20,18 @@ type InitOptions struct {
 	Upgrade bool
 }
 
-func (o *InitOptions) validate() error {
+func (o *InitOptions) validateCMDOptions(terraformDir string) error {
 	if o.BackendConfigFile != "" {
-		if err := utils.FileExist(o.BackendConfigFile); err != nil {
+		backendConfigFilePath := filepath.Join(terraformDir, o.BackendConfigFile)
+
+		if err := utils.FileExist(backendConfigFilePath); err != nil {
 			return &errors.ErrTerraformBackendFileIsNotFound{
 				BackendFilePath: o.BackendConfigFile,
-				ErrWrapped:      nil,
+				ErrWrapped:      err,
 			}
 		}
+
+		o.BackendConfigFile = backendConfigFilePath
 	}
 
 	return nil
@@ -49,7 +54,7 @@ func Init(td *terradagger.Client, options *Options, initOptions *InitOptions) er
 		}
 	}
 
-	if err := initOptions.validate(); err != nil {
+	if err := initOptions.validateCMDOptions(options.TerraformDir); err != nil {
 		return &errors.ErrTerraformInitFailedToStart{
 			ErrWrapped: err,
 			Details:    "the init options passed to the terraform command are invalid",
@@ -103,11 +108,11 @@ func Init(td *terradagger.Client, options *Options, initOptions *InitOptions) er
 
 	// Configuring the options.
 	tdOptions := &terradagger.ClientConfigOptions{
-		Image:    tfImage,
-		Version:  tfVersion,
-		Workdir:  options.TerraformDir,
-		MountDir: td.MountDir,
-		CMDs:     tfCMDDagger,
+		Image:           tfImage,
+		Version:         tfVersion,
+		Workdir:         options.TerraformDir,
+		MountDir:        td.MountDir,
+		TerraDaggerCMDs: tfCMDDagger,
 	}
 
 	tdOptions.EnvVars = resolveEnvVarsByOptions(options)

@@ -160,40 +160,130 @@ type IsSubDirOfOptions struct {
 	ChildDir  string
 }
 
-func IsSubDirOf(options *IsSubDirOfOptions) error {
-	if options == nil {
-		return fmt.Errorf("failed to check if child directory is a subdirectory of parent directory: options cannot be nil")
-	}
-
+func IsSubDirOrSiblingDir(options *IsSubDirOfOptions) error {
 	// Clean paths to eliminate any unnecessary parts.
 	cleanParentDir := filepath.Clean(options.ParentDir)
 	cleanChildDir := filepath.Clean(options.ChildDir)
 
-	// Resolve absolute paths.
-	absParentDir, err := filepath.Abs(cleanParentDir)
+	// Construct the full path of the child by joining it with the parent.
+	fullChildDir := filepath.Join(cleanParentDir, cleanChildDir)
+
+	// validate the constructed child path exists and is a directory.
+	fileInfo, err := os.Stat(fullChildDir)
 	if err != nil {
-		return fmt.Errorf("error resolving absolute path for parent directory: %w", err)
+		if os.IsNotExist(err) {
+			return fmt.Errorf("the directory does not exist: %s", fullChildDir)
+		}
+		// There was some problem accessing the path.
+		return fmt.Errorf("error accessing the directory: %w", err)
 	}
 
-	absChildDir, err := filepath.Abs(cleanChildDir)
+	if !fileInfo.IsDir() {
+		return fmt.Errorf("the path is not a directory: %s", fullChildDir)
+	}
+
+	return nil
+}
+
+type IsValidRelativeToBaseOptions struct {
+	BaseDir      string
+	RelativePath string
+}
+
+func IsValidRelativeToBase(o *IsValidRelativeToBaseOptions) error {
+	// Check for an absolute path and reject it if found.
+	relativePath := o.RelativePath
+	baseDir := o.BaseDir
+	if filepath.IsAbs(relativePath) {
+		return fmt.Errorf("the path %q is absolute, expected a relative path", relativePath)
+	}
+
+	// Check for an empty relative path.
+	if relativePath == "" {
+		return fmt.Errorf("relative path cannot be empty")
+	}
+
+	// Construct the full path by combining the base directory with the relative path.
+	fullPath := filepath.Join(baseDir, relativePath)
+
+	// Clean the resulting path to resolve any ".." or "." elements.
+	resolvedPath := filepath.Clean(fullPath)
+
+	// validate the resolved path is within the base directory hierarchy.
+	if !strings.HasPrefix(resolvedPath, baseDir) {
+		return fmt.Errorf("the path %q is not within the base directory %q", resolvedPath, baseDir)
+	}
+
+	// Check whether the resolved directory exists and is indeed a directory.
+	info, err := os.Stat(resolvedPath)
 	if err != nil {
-		return fmt.Errorf("error resolving absolute path for child directory: %w", err)
+		if os.IsNotExist(err) {
+			return fmt.Errorf("the directory %q does not exist", resolvedPath)
+		}
+		return fmt.Errorf("error accessing the directory: %w", err)
+	}
+	if !info.IsDir() {
+		return fmt.Errorf("the path %q is not a directory", resolvedPath)
 	}
 
-	// The child is not a subdirectory if the paths are identical.
-	if absParentDir == absChildDir {
-		return fmt.Errorf("child directory is not a subdirectory of parent directory: child directory and parent directory are identical")
+	return nil // The path is valid and exists as a directory.
+}
+
+func IsSubDirOf(options *IsSubDirOfOptions) error {
+	// Ensure options are not nil
+	if options == nil {
+		return fmt.Errorf("options cannot be nil")
 	}
 
-	// We add the os specific PathSeparator to the end of the parent directory to ensure that
-	// we don't have substring matches such as `/a/b` and `/a/bc`.
-	if !strings.HasSuffix(absParentDir, string(os.PathSeparator)) {
-		absParentDir += string(os.PathSeparator)
+	// Check for empty ParentDir and ChildDir
+	if options.ParentDir == "" {
+		return fmt.Errorf("parent directory cannot be empty")
+	}
+	if options.ChildDir == "" {
+		return fmt.Errorf("child directory cannot be empty")
 	}
 
-	// Check if absChildDir starts with absParentDir.
-	if !strings.HasPrefix(absChildDir, absParentDir) {
-		return fmt.Errorf("child directory is not a subdirectory of parent directory: child directory does not start with parent directory")
+	// Check for absolute path of ParentDir
+	if !filepath.IsAbs(options.ParentDir) {
+		return fmt.Errorf("parent directory must be an absolute path")
+	}
+
+	// Check that ChildDir is not absolute
+	if filepath.IsAbs(options.ChildDir) {
+		return fmt.Errorf("child directory must be a relative path")
+	}
+
+	// Clean paths to eliminate any unnecessary parts and resolve symlinks.
+	cleanParentDir, err := filepath.EvalSymlinks(filepath.Clean(options.ParentDir))
+	if err != nil {
+		return fmt.Errorf("error resolving symlinks for parent directory: %w", err)
+	}
+	cleanChildDir := filepath.Clean(options.ChildDir)
+
+	// Construct the full path of the child by joining it with the parent.
+	fullChildDir := filepath.Join(cleanParentDir, cleanChildDir)
+
+	// validate the constructed child path and ensure it's a directory.
+	fileInfo, err := os.Stat(fullChildDir)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return fmt.Errorf("child directory does not exist: %s", fullChildDir)
+		}
+		return fmt.Errorf("error accessing child directory: %w", err)
+	}
+	if !fileInfo.IsDir() {
+		return fmt.Errorf("child path is not a directory: %s", fullChildDir)
+	}
+
+	// Ensure that fullChildDir is a subdirectory of cleanParentDir.
+	relPath, err := filepath.Rel(cleanParentDir, fullChildDir)
+	if err != nil {
+		return fmt.Errorf("error determining if child directory is subdirectory of parent directory: %w", err)
+	}
+
+	// If the relative path starts with `..` or is equal to `.`, child directory is not a subdirectory.
+	if strings.HasPrefix(relPath, "..") || relPath == "." {
+		return fmt.Errorf("child directory is not a subdirectory of parent directory: %s", fullChildDir)
 	}
 
 	return nil
@@ -230,4 +320,67 @@ func IsSubDirOfOrRelativelyEqualsTo(options *IsSubDirOfOptions) error {
 		// Delegate the check to the existing IsSubDirOf function.
 		return IsSubDirOf(options)
 	}
+}
+
+func AbsoluteToRelative(baseDir, absPath string) (string, error) {
+	// validate that baseDir is a valid directory.
+	if baseInfo, err := os.Stat(baseDir); err != nil {
+		return "", fmt.Errorf("invalid base directory: %w", err)
+	} else if !baseInfo.IsDir() {
+		return "", fmt.Errorf("base path is not a directory: %s", baseDir)
+	}
+
+	// validate that absPath is a valid path and is absolute.
+	if absInfo, err := os.Stat(absPath); err != nil {
+		return "", fmt.Errorf("invalid absolute path: %w", err)
+	} else if !absInfo.Mode().IsDir() && !absInfo.Mode().IsRegular() {
+		return "", fmt.Errorf("path is not a directory or a regular file: %s", absPath)
+	} else if !filepath.IsAbs(absPath) {
+		return "", fmt.Errorf("path is not absolute: %s", absPath)
+	}
+
+	// Convert absolute path to relative.
+	relPath, err := filepath.Rel(baseDir, absPath)
+	if err != nil {
+		return "", fmt.Errorf("failed to convert to relative path: %w", err)
+	}
+
+	return relPath, nil
+}
+
+// RelativeToAbsolute converts a relative path to an absolute path given a base directory.
+// It also ensures that the base directory is valid and the formed absolute path is valid.
+func RelativeToAbsolute(baseDir, relPath string) (string, error) {
+	// validate that baseDir is a valid directory.
+	if baseInfo, err := os.Stat(baseDir); err != nil {
+		return "", fmt.Errorf("invalid base directory: %w", err)
+	} else if !baseInfo.IsDir() {
+		return "", fmt.Errorf("base path is not a directory: %s", baseDir)
+	}
+
+	// Construct the absolute path.
+	absPath := filepath.Join(baseDir, relPath)
+
+	// validate the absolute path.
+	if absInfo, err := os.Stat(absPath); err != nil {
+		return "", fmt.Errorf("invalid absolute path: %w", err)
+	} else if !absInfo.Mode().IsDir() && !absInfo.Mode().IsRegular() {
+		return "", fmt.Errorf("formed path is not a directory or a regular file: %s", absPath)
+	}
+
+	return absPath, nil
+}
+
+func FileExist(path string) error {
+	info, err := os.Stat(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return fmt.Errorf("file %s does not exist", path)
+		}
+		return fmt.Errorf("error checking the path %s: %v", path, err)
+	}
+	if info.IsDir() {
+		return fmt.Errorf("%s is a directory", path)
+	}
+	return nil
 }

@@ -2,7 +2,6 @@ package setup
 
 import (
 	"fmt"
-	"path/filepath"
 
 	"github.com/Excoriate/terraform-registry-aws-rds/pkg/core/params"
 
@@ -39,20 +38,21 @@ func AttachRuntimeDirsInContainer(runtime *types.ActionRuntime,
 		return container
 	}
 
-	mntPrefix := params.GetDefaultMountDir()
-	container.WithDirectory(mntPrefix, runtime.MountDir.DaggerDir)
+	mntPrefix := params.GetDaggerMntDirPrefix()
+	container = container.WithDirectory(mntPrefix, runtime.MountDir.DaggerDir)
 
 	if runtime.Workdir == nil {
 		return container
 	}
 
-	workDirRelative := filepath.Join(mntPrefix, runtime.Workdir.RelativePath)
-	container.WithWorkdir(workDirRelative)
+	// workDirRelative := filepath.Join(mntPrefix, runtime.Workdir.RelativePath)
+	// workDirRelative := filepath.Join(mntPrefix, "/modules/default")
+	// container = container.WithWorkdir(workDirRelative)
+	container = container.WithWorkdir(runtime.Workdir.AbsolutePath)
 
-	if len(runtime.CMDs) > 0 {
-		for _, cmd := range runtime.CMDs {
-			container.WithExec(cmd.CMDToRun) // If there's no 'sync' call, they aren't evaluated.
-		}
+	for _, cmd := range runtime.CMDs {
+		container = container.WithExec(cmd.CMDToRun) // If there's no 'sync' call,
+		// they aren't evaluated.
 	}
 
 	return container

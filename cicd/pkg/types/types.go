@@ -7,6 +7,7 @@ type PipelineDir struct {
 	AbsolutePath string
 	CurrentDir   string
 	DaggerDir    *dagger.Directory
+	HomeDir      string
 }
 
 type ActionRuntime struct {

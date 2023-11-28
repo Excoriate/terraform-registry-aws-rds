@@ -19,7 +19,7 @@ var awsSecretAccessKey string
 var tfWorkDir string
 
 var rootCmd = &cobra.Command{
-	Use:   "pipeline",
+	Use:   "terradagger",
 	Short: "Pipelines as code using Dagger.io",
 	Run: func(cmd *cobra.Command, args []string) {
 		_ = cmd.Help()
@@ -28,13 +28,13 @@ var rootCmd = &cobra.Command{
 
 func init() {
 	rootCmd.PersistentFlags().StringVarP(&awsRegion, "aws-region", "r", "us-east-1",
-		"AWS region to use this pipeline, e.g. us-east-1")
+		"AWS region to use this terradagger, e.g. us-east-1")
 
 	rootCmd.PersistentFlags().StringVarP(&awsAccessKeyID, "aws-access-key-id", "a", "",
-		"AWS access key id to use this pipeline, e.g. AKIA...")
+		"AWS access key id to use this terradagger, e.g. AKIA...")
 
 	rootCmd.PersistentFlags().StringVarP(&awsSecretAccessKey, "aws-secret-access-key", "s", "",
-		"AWS secret access key to use this pipeline, e.g. 1a2b3c...")
+		"AWS secret access key to use this terradagger, e.g. 1a2b3c...")
 
 	rootCmd.PersistentFlags().StringVarP(&tfWorkDir, "tf-work-dir", "w", "",
 		"Path to the Terraform working directory, e.g. ./modules/<my_module>. ")

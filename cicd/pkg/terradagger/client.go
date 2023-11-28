@@ -1,13 +1,12 @@
-package pipeline
+package terradagger
 
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
 
 	"github.com/Excoriate/terraform-registry-aws-rds/pkg/errors"
-
-	"github.com/Excoriate/terraform-registry-aws-rds/pkg/daggerio"
 
 	"dagger.io/dagger"
 
@@ -27,27 +26,27 @@ type Client struct {
 	HomeDir     string
 	HostEnvVars map[string]string
 	// Client           *dagger.Client
-	ContainerFactory daggerio.Container
-	MountDir         string
-	DaggerClient     *dagger.Client
+	MountDir     string
+	DaggerClient *dagger.Client
 }
 
-type PipelineConfigOptions struct {
+type ClientConfigOptions struct {
 	Image    string
+	Version  string
 	EnvVars  map[string]string
 	Workdir  string
 	MountDir string
 	CMDs     [][]string
 }
 
-type Pipeline interface {
-	// Configure the pipeline, which includes:
+type Core interface {
+	// Configure the terradagger, which includes:
 	// 1. The dagger client is connected, and properly configured.
 	// 2. The image is pulled, and the container is configured.
 	// 3. The container is mounted, and the workdir is set.
-	Configure(options *PipelineConfigOptions) (*dagger.Container, error)
+	Configure(options *ClientConfigOptions) (*dagger.Container, error)
 
-	// Run the pipeline.
+	// Run the terradagger.
 	Run(container *dagger.Container) error
 }
 
@@ -71,12 +70,17 @@ func newDaggerClient(ctx context.Context, options ...dagger.ClientOpt) (*dagger.
 	return dagger.Connect(ctx, daggerOptions...)
 }
 
-type NewPipelineOptions struct {
+// ClientOptions are the options for the terradagger client.
+// RootDir is the root directory of the terradagger client.
+// WithStderrLogInDaggerClient is a flag to enable stderr as log output for the dagger client.
+type ClientOptions struct {
 	RootDir                     string
 	WithStderrLogInDaggerClient bool
 }
 
-func New(ctx context.Context, options *NewPipelineOptions) (*Client, error) {
+// New creates a new terradagger client.
+// If no options are passed, the default options are used.
+func New(ctx context.Context, options *ClientOptions) (*Client, error) {
 	l := o11y.NewLogger(o11y.LoggerOptions{
 		EnableJSONHandler: true,
 		EnableStdError:    true,
@@ -86,7 +90,7 @@ func New(ctx context.Context, options *NewPipelineOptions) (*Client, error) {
 	currentDir := utils.GetCurrentDir()
 	id := utils.GetUUID()
 
-	l.Info(fmt.Sprintf("Starting pipeline with id %s", id))
+	l.Info(fmt.Sprintf("Starting terradagger with id %s", id))
 
 	client := &Client{
 		Logger:      l,
@@ -97,68 +101,61 @@ func New(ctx context.Context, options *NewPipelineOptions) (*Client, error) {
 		HostEnvVars: hostEnvVars,
 	}
 
-	if options == nil {
-		l.Info("No options passed to the pipeline. Using default options. Also, " +
-			"the mountDir will be set to '.' (current directory).")
+	var logOutput io.Writer = os.Stdout // Default log output is stdout
 
-		daggerClient, err := newDaggerClient(ctx, dagger.WithLogOutput(os.Stdout))
-		if err != nil {
-			return nil, errors.NewTerraDaggerError(errors.ErrDaggerClientCannotStart, "", err)
+	if options != nil {
+		// Adjust log output if option is provided
+		if options.WithStderrLogInDaggerClient {
+			l.Debug("Using stderr as log output for dagger client.")
+			logOutput = os.Stderr
 		}
-
-		client.DaggerClient = daggerClient
-		client.MountDir = "."
-
-		l.Info("TerraDagger client started successfully.")
-		return client, nil
+		mountDirPath, mountErr := resolveMountDirPath(options.RootDir)
+		if mountErr != nil {
+			return nil, &errors.ErrTerraDaggerInitializationError{
+				ErrWrapped: mountErr,
+				Details:    fmt.Sprintf("the mountDir could not be resolved with root directory: %s", options.RootDir),
+			}
+		}
+		client.MountDir = mountDirPath
+		l.Info(fmt.Sprintf("Mount directory resolved to: %s", client.MountDir))
 	}
 
-	var daggerClientOptions []dagger.ClientOpt
-
-	if options.WithStderrLogInDaggerClient {
-		daggerClientOptions = append(daggerClientOptions, dagger.WithLogOutput(os.Stderr))
-	} else {
-		daggerClientOptions = append(daggerClientOptions, dagger.WithLogOutput(os.Stdout))
-	}
-
-	daggerClient, err := newDaggerClient(ctx, daggerClientOptions...)
+	daggerClient, err := newDaggerClient(ctx, dagger.WithLogOutput(logOutput))
 	if err != nil {
-		return nil, err
+		return nil, &errors.ErrTerraDaggerInitializationError{
+			ErrWrapped: err,
+			Details:    "the dagger client could not be started",
+		}
 	}
 
 	client.DaggerClient = daggerClient
 
-	mountDirPath, err := resolveMountDirPath(options.RootDir)
-	if err != nil {
-		return nil, err
+	if options == nil {
+		client.MountDir = "." // Default mount directory set to current directory
 	}
 
-	client.MountDir = mountDirPath
-
-	if options.WithStderrLogInDaggerClient {
-		daggerClient, err := newDaggerClient(ctx, dagger.WithLogOutput(os.Stderr))
-		if err != nil {
-			return nil, err
-		}
-
-		client.DaggerClient = daggerClient
-	}
-
+	l.Info("TerraDagger client started successfully.")
 	return client, nil
 }
 
-func (p *Client) Configure(options *PipelineConfigOptions) (*dagger.Container, error) {
-	dirs, err := resolveDirs(p.DaggerClient, options.MountDir, options.Workdir)
+func (p *Client) Configure(options *ClientConfigOptions) (*dagger.Container, error) {
+	dirs := getDirs(p.DaggerClient, options.MountDir, options.Workdir)
+
+	tdContainer := NewContainer(p)
+	container, err := tdContainer.create(&NewContainerOptions{
+		Image:   options.Image,
+		Version: options.Version,
+	})
+
 	if err != nil {
 		return nil, err
 	}
 
-	container := p.DaggerClient.Container().From("hashicorp/terraform:latest").
-		WithMountedDirectory(mountPathPrefix, dirs.MountDir).
-		WithWorkdir(dirs.WorkDirPathInContainer)
+	container = tdContainer.withDirs(container, dirs.MountDir, dirs.WorkDirPathInContainer)
+	container = tdContainer.withCommands(container, options.CMDs)
 
-	for _, cmds := range options.CMDs {
-		container = container.WithExec(cmds)
+	if len(options.EnvVars) > 0 {
+		container = tdContainer.withEnvVars(container, options.EnvVars)
 	}
 
 	return container, nil

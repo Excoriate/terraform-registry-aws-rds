@@ -5,14 +5,14 @@ import (
 	"github.com/Excoriate/terraform-registry-aws-rds/pkg/utils"
 )
 
-// GetDefaultWorkDir returns the default working directory for the pipeline.
+// GetDefaultWorkDir returns the default working directory for the terradagger.
 // Job, or the Action if requested. It always resolves to the current working
 // directory.
 func GetDefaultWorkDir() string {
 	return utils.GetCurrentDir()
 }
 
-// GetBaseDir returns the default working directory for the pipeline.
+// GetBaseDir returns the default working directory for the terradagger.
 func GetBaseDir() string {
 	return utils.GetCurrentDir()
 }

@@ -1,31 +1,25 @@
 ---
-name: ⭐ Feature Request
-about: Propose a great feature for gitbuster CLI.
-title: "[Feature Title]"
-labels: "enhancement"
+name: Feature request
+about: Suggest an idea for this project.
+title: ""
+labels: "feature"
+assignees: "Excoriate"
 ---
 
-## 🌟 Feature Description
-Provide a clear and concise description of the feature you want to suggest.
-For example: "I'd love for the `gitbuster provision` command to support batch resource provisioning."
+## Describe the Feature
+A clear and concise description of what the bug is.
 
-## 🚀 What's the Benefit?
-Describe the benefit of implementing the feature from the user's perspective.
-For example: "This feature would speed up the infrastructure setup process by provisioning multiple resources in one command."
+## Expected Behavior
+A clear and concise description of what you expected to happen.
 
-## 🛠️ Proposed Solution
-Propose a solution if you have one in mind. If not, just leave this section blank.
-For example: "The `gitbuster provision` command could accept a JSON file containing an array of resources to provision."
+## Use Case
+Is your feature request related to a problem/challenge you are trying to solve? Please provide some additional context of why this feature or capability will be valuable.
 
-## 💡 Possible Alternatives
-If applicable, describe any alternative solutions or features you've considered.
+## Describe Ideal Solution
+A clear and concise description of what you want to happen. If you don't know, that's okay.
 
-## 🗺️ Example Scenario
-Describe an example where your proposed feature would be beneficial.
-For example: "If I want to create 10 S3 buckets, instead of running the `gitbuster provision` command 10 times, I could define all 10 in a JSON file and run the command once."
+## Alternatives Considered
+Explain what alternative solutions or features you've considered.
 
-## 📚 Any Relevant Documentation?
-Add any relevant documents or links that will help us understand the feature request better.
-
-## 🌞 Anything else you would like to add?
-Add any other context or screenshots about the feature request here!
+## Additional Context
+Add any other context or screenshots about the feature request here.

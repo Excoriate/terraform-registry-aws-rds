@@ -1,21 +1,23 @@
 # Default variables
 ENV ?= dev
-MODULE ?= default
-EXAMPLE ?= basic
-
 
 # Root directories for different Terraform components
-MODULE_ROOT_DIR ?= modules
-EXAMPLE_ROOT_DIR ?= examples
-VARS_FILE_ROOT_DIR ?= config
+MODULE ?= default
+VARS ?= ""
+TEST_DIR ?= tests
+TERRATEST_DIR_UNIT ?= unit
+TERRATEST_DIR_INTEGRATION ?= integration
+TEST_TYPE ?= unit
+TERRAFORM_MODULES_DIR	?= modules
+TERRAFORM_RECIPES_DIR ?= examples
+RECIPE ?= basic
 
-# Default vars file
-VARS ?= fixtures.tfvars
+# Tools, and scripts.
+SCRIPTS_FOLDER ?= scripts
+GO=go
+MODULE_ROOT_DIR = $(TERRAFORM_MODULES_DIR)/$(MODULE)
 
 .PHONY: default clean prune check-workdir tf-init
-
-default:
-	@echo "Available make targets ..."
 
 clean:
 	@echo "Cleaning directories..."
@@ -53,31 +55,16 @@ clean:
 prune: clean
 	@git clean -f -xd --exclude-list
 
-TF_WORKING_DIR_MODULES = $(MODULE_ROOT_DIR)/$(MODULE) # modules/default
-TF_WORKING_DIR_EXAMPLES = $(EXAMPLE_ROOT_DIR)/$(MODULE)/$(EXAMPLE) # examples/default/basic
-WORKDIR =
-TF_VARS_FILE = $(VARS_FILE_ROOT_DIR)/$(VARS) # config/fixtures.tfvars
-
-check-workdir:
-	@if [ ! -d "$(WORKDIR)" ]; then \
-		echo "Module directory does not exist: $(WORKDIR)"; \
-		echo "Full path: $(shell pwd)/$(WORKDIR)"; \
-		exit 1; \
-	fi
-	@if [ -z "$(shell find $(WORKDIR) -mindepth 1 -name '*.tf' -print -quit)" ]; then \
-		echo "No Terraform files found in the module directory $(WORKDIR)"; \
-		exit 1; \
-	fi
 #####################
 # Common targets #
 #####################
-hooks-init:
+pc-init:
 	@pre-commit install --hook-type pre-commit
 	@pre-commit install --hook-type pre-push
 	@pre-commit install --hook-type commit-msg
 	@pre-commit autoupdate
 
-hooks-run:
+pc-run:
 	@pre-commit run --show-diff-on-failure \
 		--all-files \
 		--color always
@@ -85,36 +72,122 @@ hooks-run:
 #####################
 # Terraform targets #
 #####################
-tf-init: clean check-workdir
-	@cd $(WORKDIR) && terraform init
+tf-init: clean
+	@cd $(TERRAFORM_MODULES_DIR)/$(MODULE) && terraform init
 
-tf-validate: check-workdir clean tf-init
-	@cd $(WORKDIR) && terraform validate
+tf-validate: clean tf-init
+	@cd $(TERRAFORM_MODULES_DIR)/$(MODULE) && terraform validate
 
-tf-fmt-check: check-workdir clean
-	@cd $(WORKDIR) && terraform fmt -check=true -diff=true -write=false
+tf-fmt-check: clean
+	@cd $(TERRAFORM_MODULES_DIR)/$(MODULE) && terraform fmt -check=true -diff=true -write=false
 
-tf-fmt: check-workdir clean
-	@cd $(WORKDIR) && terraform fmt -check=false -diff=true -write=true
+tf-fmt: clean
+	@cd $(TERRAFORM_MODULES_DIR)/$(MODULE) && terraform fmt -check=false -diff=true -write=true
 
-tf-docs: check-workdir clean
-	@cd $(WORKDIR) && terraform-docs -c .terraform-docs.yml md . > README.md
+tf-docs: clean
+	@cd $(TERRAFORM_MODULES_DIR)/$(MODULE) && terraform-docs -c .terraform-docs.yml md . > README.md
 
-tf-lint: check-workdir clean tf-init
-	@cd $(WORKDIR) && tflint -v && tflint --init && tflint
+tf-lint: clean tf-init
+	@cd $(TERRAFORM_MODULES_DIR)/$(MODULE) && tflint -v && tflint --init && tflint
 
-tf-plan: check-workdir clean tf-init
-	@cd $(WORKDIR) && terraform plan -var-file=$(TF_VARS_FILE)
+tf-ci: clean tf-init tf-validate tf-fmt-check tf-lint tf-docs
 
-tf-apply: check-workdir clean tf-plan
-	@cd $(WORKDIR) && terraform apply -var-file=$(TF_VARS_FILE)
+tf-plan: clean tf-init
+	@if [ -z "$(VARS)" ]; then \
+		echo "No vars file provided, skipping terraform plan with vars."; \
+		cd $(TERRAFORM_MODULES_DIR)/$(MODULE) && terraform plan; \
+	else \
+		cd $(TERRAFORM_MODULES_DIR)/$(MODULE) && terraform plan -var-file=$(VARS); \
+	fi
 
-tf-destroy: check-workdir clean tf-init
-	@cd $(WORKDIR) && terraform destroy -var-file=$(TF_VARS_FILE)
+tf-apply: clean tf-plan
+	@if [ -z "$(VARS)" ]; then \
+		echo "No vars file provided, skipping terraform apply with vars."; \
+		cd $(TERRAFORM_MODULES_DIR)/$(MODULE) && terraform apply -auto-approve; \
+	else \
+		cd $(TERRAFORM_MODULES_DIR)/$(MODULE) && terraform apply -auto-approve -var-file=$(VARS); \
+	fi
+
+tf-destroy: clean tf-init
+	@if [ -z "$(VARS)" ]; then \
+		echo "No vars file provided, skipping terraform destroy with vars."; \
+		cd $(TERRAFORM_MODULES_DIR)/$(MODULE) && terraform destroy -auto-approve; \
+	else \
+		cd $(TERRAFORM_MODULES_DIR)/$(MODULE) && terraform destroy -auto-approve -var-file=$(VARS); \
+	fi
+
+recipe-init: clean
+	@echo "Initialize the terraform module"
+	@cd $(TERRAFORM_RECIPES_DIR)/$(MODULE)/$(RECIPE) && terraform init
+
+recipe-plan: recipe-init
+	@echo "In the terraform module, execute a terraform plan"
+	@if [ -z "$(VARS)" ]; then \
+		echo "No vars file provided, skipping terraform plan with vars."; \
+		cd $(TERRAFORM_RECIPES_DIR)/$(MODULE)/$(RECIPE) && terraform plan; \
+	else \
+		cd $(TERRAFORM_RECIPES_DIR)/$(MODULE)/$(RECIPE) && terraform plan -var-file=config/$(VARS); \
+	fi
+
+recipe-apply: recipe-plan
+	@echo "In the terraform module, execute a terraform apply"
+	@if [ -z "$(VARS)" ]; then \
+		echo "No vars file provided, skipping terraform apply with vars."; \
+		cd $(TERRAFORM_RECIPES_DIR)/$(MODULE)/$(RECIPE) && terraform apply -auto-approve; \
+	else \
+		cd $(TERRAFORM_RECIPES_DIR)/$(MODULE)/$(RECIPE) && terraform apply -auto-approve -var-file=config/$(VARS); \
+	fi
+
+recipe-destroy: recipe-init
+	@echo "In the terraform module, execute a terraform destroy"
+	@if [ -z "$(VARS)" ]; then \
+		echo "No vars file provided, skipping terraform destroy with vars."; \
+		cd $(TERRAFORM_RECIPES_DIR)/$(MODULE)/$(RECIPE) && terraform destroy -auto-approve; \
+	else \
+		cd $(TERRAFORM_RECIPES_DIR)/$(MODULE)/$(RECIPE) && terraform destroy -auto-approve -var-file=config/$(VARS); \
+	fi
+
+recipe-ci: clean
+	@echo "Run CI tasks for the terraform modules as part of the 'test-data' directory"
+	@cd $(TERRAFORM_RECIPES_DIR)/$(MODULE)/$(RECIPE) && terraform init && terraform validate && terraform fmt -check=true -diff=true -write=false && terraform-docs -c .terraform-docs.yml md . > README.md && tflint -v && tflint --init && tflint
+
+recipe-docs: clean
+	@echo "Generate terraform docs"
+	@cd $(TERRAFORM_RECIPES_DIR)/$(MODULE)/$(RECIPE) && terraform-docs -c .terraform-docs.yml md . > README.md
 
 #####################
-# Terraform module targets #
+# Go targets #
 #####################
-tf-module-init: check-workdir clean tf-init
-tf-module-ci: check-workdir clean tf-init tf-validate tf-fmt-check tf-lint tf-docs
-tf-example-ci: check-workdir clean tf-init tf-validate tf-fmt-check tf-lint tf-docs
+.PHONY: go-tidy
+go-tidy:
+	@echo "===========> Tidy go.mod in $(TEST_DIR)/$(MODULE)/$(TEST_TYPE)"
+	@cd $(TEST_DIR)/$(MODULE)/$(TEST_TYPE) && $(GO) mod tidy
+
+## fmt: Run go fmt against code.
+.PHONY: go-fmt
+go-fmt:
+	@echo "===========> Run go fmt against code in $(TEST_DIR)/$(MODULE)/$(TEST_TYPE)"
+	@cd $(TEST_DIR)/$(MODULE)/$(TEST_TYPE) && $(GO) fmt -x ./...
+
+## vet: Run go vet against code.
+.PHONY: go-vet
+go-vet:
+	@echo "===========> Run go vet against code in $(TEST_DIR)/$(MODULE)/$(TEST_TYPE)"
+	@cd $(TEST_DIR)/$(MODULE)/$(TEST_TYPE) && $(GO) vet ./...
+
+## lint: Run go lint against code.
+.PHONY: go-lint
+go-lint:
+	@echo "===========> Run go lint against code in $(TEST_DIR)/$(MODULE)/$(TEST_TYPE)"
+	@cd $(TEST_DIR)/$(MODULE)/$(TEST_TYPE) && golangci-lint run -v --config ../../../.golangci.yml
+#	@golangci-lint run -v --config .golangci.yml
+
+## style: Code style -> fmt,vet,lint
+.PHONY: go-style
+go-style: go-fmt go-vet go-lint
+
+## test: Run unit test
+.PHONY: go-test
+go-test:
+	@echo "===========> Run unit test in $(TEST_DIR)/$(MODULE)/$(TEST_TYPE)"
+	@cd $(TEST_DIR)/$(MODULE)/$(TEST_TYPE) && $(GO) test -v ./ --timeout 30m

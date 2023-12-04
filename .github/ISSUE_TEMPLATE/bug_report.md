@@ -1,48 +1,33 @@
 ---
-name: 🪲 Bug Report
-about: If something isn't working as expected on gitbuster CLI.
-title: "[Bug Title]"
+name: Bug report
+about: Create a bug report to help us improve.
+title: ""
 labels: "bug"
+assignees: "Excoriate"
 ---
 
-## 🪲 Describe the Bug
-Provide a clear explanation of the bug within the framework of gitbuster CLI.
-Example: "gitbuster crashes when attempting to provision a new resource through the `gitbuster resource` command."
+Found a bug? Maybe just reach me out through [Email](alex@ideaup.cl) would be better.
 
-## ⚡️ Type of Bug
-Please select the type of bug you are reporting:
-- [ ] Command Error
-- [ ] Crash/Error Message
-- [ ] Installation Issue
-- [ ] Documentation Issue
-- [ ] Other (Please describe)
+## Describe the Bug
+A clear and concise description of what the bug is.
 
-## 🔬 Steps to Reproduce
-Detail out the steps to reproduce the bug.
-Example:
-1. Run the `gitbuster resource` command.
-2. Define the resource parameters.
-3. Observe the crash/error message.
+## Expected Behavior
+A clear and concise description of what you expected to happen.
 
-## 🔑 Expected Behavior
-Explain what you anticipated happening.
-Example: "The CLI should've provisioned the resource and outputted success message."
+## Steps to Reproduce
+Steps to reproduce the behavior:
+1. Go to '...'
+2. Run '....'
+3. Enter '....'
+4. See error
 
-## 🌚 Actual Behavior
-Describe what actually occurred given the steps.
-Example: "gitbuster crashed and an error message was displayed."
+## Screenshots
+If applicable, add screenshots or logs to help explain your problem.
 
-## 📷 Screenshots
-Include screenshots to better illustrate the bug, if necessary.
+## Environment (please complete the following information):
+Anything that will help us triage the bug will help. Here are some ideas:
+- OS: [e.g. Linux, OSX, WSL, etc]
+- Version [e.g. 0.0.2]
 
-## 🧰 Possible Solution
-Impart any insight on a potential bug fix, if possible.
-
-## 📝 Additional Context
-Include any relevant logs, error messages, or related information that would provide more context to the bug.
-
-## 🌪️ Impact
-Provide details on the scale and severity of the bug. This helps determine the urgency of the fix.
-
-## 📚 Related Documentation
-Include any relevant documentation/resources that correlate with the bug.
+## Additional Context
+Add any other context about the problem here.

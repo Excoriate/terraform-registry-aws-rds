@@ -1,34 +1,30 @@
 <h1 align="center">
   <img alt="logo" src="https://forum.huawei.com/enterprise/en/data/attachment/forum/202204/21/120858nak5g1epkzwq5gcs.png" width="224px"/><br/>
-  Terraform AWS ☁️ Events ☄️
+  Terraform AWS RDS module(s) ☁️
 </h1>
-<p align="center">An easy to understand, opinionated terraform <b>composable</b> set of modules for managing Events, Signals and Related architectures  in <b> for AWS ☁️</b>.<br/><br/>
+<p align="center">An easy to understand, opinionated terraform <b>composable</b> module<b> with batteries included 🔋</b>.<br/><br/>
 
 ---
 
-[![Auto Release](https://github.com/Excoriate/vault-labs/actions/workflows/release.yml/badge.svg)](https://github.com/Excoriate/vault-labs/actions/workflows/release.yml)
-[![Terraform Check](https://github.com/Excoriate/terraform-registry-aws-accounts-creator/actions/workflows/ci-check-terraform.yml/badge.svg)](https://github.com/Excoriate/terraform-registry-aws-accounts-creator/actions/workflows/ci-check-terraform.yml)
-[![Run pre-commit](https://github.com/Excoriate/terraform-registry-aws-accounts-creator/actions/workflows/ci-check-precommit.yml/badge.svg)](https://github.com/Excoriate/terraform-registry-aws-accounts-creator/actions/workflows/ci-check-precommit.yml)
-[![Terratest](https://github.com/Excoriate/terraform-registry-aws-accounts-creator/actions/workflows/ci-pr-terratest.yml/badge.svg)](https://github.com/Excoriate/terraform-registry-aws-accounts-creator/actions/workflows/ci-pr-terratest.yml)
+[![Unit & Integration tests TerraTest](https://github.com/Excoriate/terraform-registry-aws-rds/actions/workflows/terratest.yml/badge.svg)](https://github.com/Excoriate/terraform-registry-aws-rds/actions/workflows/terratest.yml)
+[![Go Linter Terratest](https://github.com/Excoriate/terraform-registry-aws-rds/actions/workflows/golang-linter-terratest.yaml/badge.svg)](https://github.com/Excoriate/terraform-registry-aws-rds/actions/workflows/golang-linter-terratest.yaml)
+[![Release](https://github.com/Excoriate/terraform-registry-aws-rds/actions/workflows/release.yaml/badge.svg)](https://github.com/Excoriate/terraform-registry-aws-rds/actions/workflows/release.yaml)
+[![Terraform CI Checks Modules](https://github.com/Excoriate/terraform-registry-aws-rds/actions/workflows/terraform-ci-modules.yml/badge.svg)](https://github.com/Excoriate/terraform-registry-aws-rds/actions/workflows/terraform-ci-modules.yml)
+[![Terraform CI Checks Recipes](https://github.com/Excoriate/terraform-registry-aws-rds/actions/workflows/terraform-ci-recipes.yml/badge.svg)](https://github.com/Excoriate/terraform-registry-aws-rds/actions/workflows/terraform-ci-recipes.yml)
+[![Terraform Plan recipes AWS on PR](https://github.com/Excoriate/terraform-registry-aws-rds/actions/workflows/terraform-ci-plan-recipes-aws.yml/badge.svg)](https://github.com/Excoriate/terraform-registry-aws-rds/actions/workflows/terraform-ci-plan-recipes-aws.yml)
 
-
-## Table of Contents
-
-1. [About The Module](#about-the-module)
-2. [Module documentation](#module-documentation)
-   1. [Capabilities](#capabilities)
-   2. [Getting Started](#getting-started)
-   3. [Roadmap](#roadmap)
-3. [Contributions](#contributing)
-4. [License](#license)
-5. [Contact](#contact)
-
+[//]: # (// FIXME: Remove, refactor or change. (Template)
 
 
 <!-- ABOUT THE PROJECT -->
 ## About The Module
 
-This module encapsulate a set of modules that configure, and provision accounts-related resources on AWS.
+These mono-repo contains a set of Terraform modules and recipes for provisioning AWS RDS resources. The modules are designed to be **composable**, and **opinionated**. The recipes are designed to be **easy to understand**, and **easy to use**.
+In the following table are listed the modules included in this repository:
+
+| Module                       | Description                            |
+|------------------------------|----------------------------------------|
+| [default](./modules/default) | Example (boilerplate/template) module. |
 
 ---
 
@@ -39,28 +35,147 @@ The documentation is **automatically generated** by [terraform-docs](https://ter
 
 ### Capabilities
 
-| Module                          | Status   | Description                                                                                                           |
-|---------------------------------|----------|-----------------------------------------------------------------------------------------------------------------------|
-| `aws-eventbridge-rule`          | Stable ✅ | Create an event rule, that can work with several destinations..                                                       |
-| `aws-eventbridge-permissions`   | Stable ✅ | Opinionated module to create custom (and usually required) permissions for an eventbridge resource, normally `rules`. |
-| `aws-lambda-function`           | Stable ✅ | Create a lambda function, for different use-case.                                                                     |
-| `aws-cognito-user-pool`         | Stable ✅ | Create a cognito user pool, with a set of opinionated defaults.                                                       |
-| `aws-cognito-user-pool-client`  | Stable ✅ | Create a cognito user pool client, with a set of opinionated defaults.                                                |
-| `aws-cognito-user-pool-domain`  | Stable ✅ | Create a cognito user pool domain, with a set of opinionated defaults.                                                |
-| `aws-cognito-identity-provider` | Stable ✅ | Create a cognito identity provider, with a set of opinionated defaults.                                               |
-| `aws-ses`                       | Stable ✅ | Complete SES module, that supports all current available capabilities.                                                |
+[//]: # (// FIXME: Remove, refactor or change. (Template)
 
-
+(put description here)
 
 ### Getting Started
 
-Check the example recipes 🥗 [here](examples)
+[//]: # (// FIXME: Remove, refactor or change. (Template)
+
+(put description here)
 
 ### Roadmap
 
-- [ ] Add more modules
+[//]: # (// FIXME: Remove, refactor or change. (Template)
 
+(put description here)
 
+### Module standard structure
+
+The module's relevant components, structure and "skeleton" is described below:
+
+```txt
+.
+├── CONTRIBUTING.md
+├── LICENSE
+├── Makefile
+├── README.md
+├── TaskFile.yml
+├── default
+│   └── unit
+├── docs
+│   └── contribution_guidelines.md
+├── examples
+│   ├── README.md
+│   ├── TaskFile.yml
+│   └── default
+│       └── basic
+│           ├── README.md
+│           ├── config
+│           │   └── fixtures.tfvars
+│           ├── main.tf
+│           ├── outputs.tf
+│           ├── providers.tf
+│           ├── variables.tf
+│           └── versions.tf
+├── modules
+│   ├── TaskFile.yml
+│   └── default
+│       ├── README.md
+│       ├── data.tf
+│       ├── locals.tf
+│       ├── main.tf
+│       ├── outputs.tf
+│       ├── variables.tf
+│       └── versions.tf
+├── release-please-config.json
+├── scripts
+│   ├── containers
+│   │   └── build-and-run.sh
+│   ├── golang
+│   │   └── go_build.sh
+│   └── hooks
+│       └── pre-commit-init.sh
+├── taskfiles
+│   ├── Taskfile.common.yml
+│   ├── Taskfile.devex.yml
+│   ├── Taskfile.precommit.yml
+│   ├── Taskfile.terraform.yml
+│   └── Taskfile.terragrunt.yml
+└── tests
+    ├── README.md
+    ├── TaskFile.yml
+    └── default
+        ├── integration
+        │   ├── default_basic_integration_test.go
+        │   ├── go.mod
+        │   ├── go.sum
+        │   └── target
+        │       └── basic
+        │           └── main.tf
+        └── unit
+            ├── default_basic_unit_test.go
+            ├── go.mod
+            ├── go.sum
+            └── target
+                └── basic
+                    └── main.tf```
+```
+
+Where:
+
+* **⚡️Modules**: refers to the actual module's directory. Where the `.tf` files reside. Each `subdirectory` is a module.
+* **⚡️Examples**: refers to the examples directory, where the examples recipes lives. These are also used for testing the infrastructure using [Terratest](https://terratest.gruntwork.io/). For its specific documentation, query [this link](examples/README.md)
+* **⚡️Tests**: refers to the tests directory, where the tests recipes lives. These are also used for testing the infrastructure using [Terratest](https://terratest.gruntwork.io/). For its specific documentation, query [this link](tests/README.md)
+
+## Developer Experience
+
+Some tools that this repo uses:
+
+* 🧰 Terraform — strongly recommended the latest versions
+* 🧰 Go — justified mostly for **[Terratest](https://terratest.gruntwork.io/)**
+* 🧰 [TaskFile](https://taskfile.dev/#/) — for the automation of the tasks.
+* 🧰 [Make](https://www.gnu.org/software/make/) — for the automation of the tasks.
+
+>**NOTE**: For automation during the development process, I use [precommit](https://pre-commit.com/), which is a framework for managing and maintaining multi-language pre-commit hooks. It's a great tool, and I highly recommend it. All the hooks required are installed by [this](./DevEx/scripts/hooks/install-pre-commit-hooks-deps.sh) script. It's recommended though to run it through the [TaskFile](./TaskFile.yml) task `pre-commit-init`.
+
+To initialize your pre-commit configuration, and ensure all the hooks are installed, run the following command:
+
+```bash
+# Using taskFiles
+task pc-init
+# Using make
+make pc-init
+```
+
+To run these hooks against all the files, you can use the following `Task` command:
+
+```bash
+# Using taskFiles
+task pc-run
+# Using make
+make pc-run
+```
+
+---
+
+## Module Versioning
+
+This Module follows the principles of [Semantic Versioning (SemVer)].
+
+Given a version number `MAJOR.MINOR.PATCH`, we increment the:
+
+1. `MAJOR` version when we make incompatible changes,
+2. `MINOR` version when we add functionality in a backwards compatible manner, and
+3. `PATCH` version when we make backwards compatible bug fixes.
+
+### Backwards compatibility in `0.0.z` and `0.y.z` version
+
+* Backwards compatibility in versions `0.0.z` is **not guaranteed** when `z` is increased. (Initial development)
+* Backwards compatibility in versions `0.y.z` is **not guaranteed** when `y` is increased. (Pre-release)
+
+>**NOTE**: The releases are automatically generated using [release-please-action](https://github.com/google-github-actions/release-please-action). For more information, please refer to the [release-please-action documentation](https://github.com/google-github-actions/release-please-action)
 
 ## Contributing
 
@@ -75,8 +190,8 @@ Please see [LICENSE] for full details.
 
 ## Contact
 
-- 📧 **Email**: [Alex T.](mailto:alex@ideaup.cl)
-- 🧳 **Linkedin**: [Alex T.](https://www.linkedin.com/in/alextorresruiz/)
+* 📧 **Email**: [Alex T.](mailto:alex@ideaup.cl)
+* 🧳 **Linkedin**: [Alex T.](https://www.linkedin.com/in/alextorresruiz/)
 
 _made/with_ ❤️  🤟
 
@@ -84,29 +199,4 @@ _made/with_ ❤️  🤟
 <!-- References -->
 [LICENSE]: ./LICENSE
 [badge-license]: https://img.shields.io/badge/license-Apache%202.0-brightgreen.svg
-
-<!-- BEGIN_TF_DOCS -->
-## Requirements
-
-No requirements.
-
-## Providers
-
-No providers.
-
-## Modules
-
-No modules.
-
-## Resources
-
-No resources.
-
-## Inputs
-
-No inputs.
-
-## Outputs
-
-No outputs.
-<!-- END_TF_DOCS -->
+[Semantic Versioning (SemVer)]: https://semver.org/

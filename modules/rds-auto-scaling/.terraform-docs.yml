@@ -1,0 +1,52 @@
+---
+formatter: markdown table
+
+header-from: main.tf
+content: |-
+    # ☁️ AWS RDS Auto-Scaling
+    ## Description
+    {{ .Header }}
+    This module is used to create an AWS RDS Auto-Scaling. The current capabilities are supported:
+    * 🚀 Create an AWS RDS Auto-Scaling
+
+    For more information about this specific resources, and how the auto-scaling works, please visit its official documentation [here](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Managing.Autoscaling.html).
+    Also, for Terraform, please visit the official documentation [here](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/rds_cluster).
+    In the context of auto-scaling for Aurora, you can configure the minimum and maximum number of Aurora Replicas that the Aurora DB cluster can have, and Aurora automatically scales replicas as needed to meet changing workload demands.
+
+    ## Example
+    Examples of this module's usage are available in the [examples](./examples) folder.
+
+    ```hcl
+    {{ include "../../examples/rds-auto-scaling/basic/main.tf" }}
+    ```
+
+    For module composition, It's recommended to take a look at the module's `outputs` to understand what's available:
+    ```hcl
+    {{ include "outputs.tf" }}
+    ```
+    ---
+
+    ## Module's documentation
+    (This documentation is auto-generated using [terraform-docs](https://terraform-docs.io))
+    {{ .Providers }}
+
+    {{ .Modules }}
+
+    {{ .Resources }}
+
+    {{ .Requirements }}
+
+    {{ .Inputs }}
+
+    {{ .Outputs }}
+
+output:
+    file: README.md
+    mode: inject
+    template: |-
+        <!-- BEGIN_TF_DOCS -->
+        {{ .Content }}
+        <!-- END_TF_DOCS -->
+settings:
+    anchor: true
+    color: true

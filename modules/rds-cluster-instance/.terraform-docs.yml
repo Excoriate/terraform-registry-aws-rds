@@ -1,0 +1,57 @@
+---
+formatter: markdown table
+
+header-from: main.tf
+content: |-
+    # ☁️ AWS RDS Cluster instances
+    ## Description
+    {{ .Header }}
+    This module is used to create an AWS RDS Cluster instances. The current capabilities are supported:
+    * 🚀 Create an AWS RDS Cluster instances
+
+    For more information about cluster instances, please visit its official documentation [here](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/CHAP_AuroraOverview.html).
+    For more information about the resource configuration using Terraform, please visit the official documentation [here](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/rds_cluster_instance).
+
+    A cluster instance in the context of Aurora is a database instance that is part of an Aurora DB cluster. Each instance in a DB cluster runs the Aurora engine and contains a copy
+    of the data in the DB cluster. You can run SQL statements on a cluster instance just as you would on a standalone instance except that you must connect to a specific instance endpoint for the
+    instance. You can also run SQL statements on the primary instance of an Aurora DB cluster and have those statements automatically routed to the appropriate instance in the DB cluster for execution. For
+    more information, see [Aurora DB cluster endpoints](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.Connecting.html#Aurora.Connecting.Cluster.Endpoints).
+
+    ---
+    ## Example
+    Examples of this module's usage are available in the [examples](./examples) folder.
+
+    ```hcl
+    {{ include "../../examples/rds-cluster-instance/basic/main.tf" }}
+    ```
+
+    For module composition, It's recommended to take a look at the module's `outputs` to understand what's available:
+    ```hcl
+    {{ include "outputs.tf" }}
+    ```
+    ---
+
+    ## Module's documentation
+    (This documentation is auto-generated using [terraform-docs](https://terraform-docs.io))
+    {{ .Providers }}
+
+    {{ .Modules }}
+
+    {{ .Resources }}
+
+    {{ .Requirements }}
+
+    {{ .Inputs }}
+
+    {{ .Outputs }}
+
+output:
+    file: README.md
+    mode: inject
+    template: |-
+        <!-- BEGIN_TF_DOCS -->
+        {{ .Content }}
+        <!-- END_TF_DOCS -->
+settings:
+    anchor: true
+    color: true

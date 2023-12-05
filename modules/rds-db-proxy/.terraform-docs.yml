@@ -3,19 +3,21 @@ formatter: markdown table
 
 header-from: main.tf
 content: |-
-    # ☁️ Example module
+    # ☁️ AWS RDS Proxy
     ## Description
     {{ .Header }}
-    This module is used to demonstrate the how easy is to create a new terraform module. Here you usually describe the module's capabilities:
-    * 🚀 Example capability or feature 1
-    * 🚀 Example capability or feature 2
+    This module is used to create an AWS RDS Proxy. The current capabilities are supported:
+    * 🚀 Create an AWS RDS Proxy
+    * 🚀 Create an AWS RDS Proxy Target Group
+
+    For more information about the RDS DB Proxy, please query: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/db_proxy
 
     ---
     ## Example
     Examples of this module's usage are available in the [examples](./examples) folder.
 
     ```hcl
-    {{ include "../../examples/default/basic/main.tf" }}
+    {{ include "../../examples/rds-db-proxy/basic/main.tf" }}
     ```
 
     For module composition, It's recommended to take a look at the module's `outputs` to understand what's available:

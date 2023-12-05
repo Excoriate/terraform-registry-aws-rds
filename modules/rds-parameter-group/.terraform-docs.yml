@@ -3,19 +3,21 @@ formatter: markdown table
 
 header-from: main.tf
 content: |-
-    # ☁️ Example module
+    # ☁️ AWS RDS Parameter group
     ## Description
     {{ .Header }}
-    This module is used to demonstrate the how easy is to create a new terraform module. Here you usually describe the module's capabilities:
-    * 🚀 Example capability or feature 1
-    * 🚀 Example capability or feature 2
+    This module is used to create an AWS RDS Parameter group. The current capabilities are supported:
+    * 🚀 Create an AWS RDS Parameter group
+
+    For more information about parameter groups, please visit its official documentation [here](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/USER_WorkingWithParamGroups.html).
+    For more information about the resource configuration using Terraform, please visit the official documentation [here](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/db_parameter_group).
 
     ---
     ## Example
     Examples of this module's usage are available in the [examples](./examples) folder.
 
     ```hcl
-    {{ include "../../examples/default/basic/main.tf" }}
+    {{ include "../../examples/rds-parameter-group/basic/main.tf" }}
     ```
 
     For module composition, It's recommended to take a look at the module's `outputs` to understand what's available:

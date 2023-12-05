@@ -147,6 +147,10 @@ recipe-destroy: recipe-init
 		cd $(TERRAFORM_RECIPES_DIR)/$(MODULE)/$(RECIPE) && terraform destroy -auto-approve -var-file=config/$(VARS); \
 	fi
 
+recipe-lint: clean
+	@echo "Run linting tasks for the terraform modules as part of the 'test-data' directory"
+	@cd $(TERRAFORM_RECIPES_DIR)/$(MODULE)/$(RECIPE) && tflint -v && tflint --init && tflint
+
 recipe-ci: clean
 	@echo "Run CI tasks for the terraform modules as part of the 'test-data' directory"
 	@cd $(TERRAFORM_RECIPES_DIR)/$(MODULE)/$(RECIPE) && terraform init && terraform validate && terraform fmt -check=true -diff=true -write=false && terraform-docs -c .terraform-docs.yml md . > README.md && tflint -v && tflint --init && tflint

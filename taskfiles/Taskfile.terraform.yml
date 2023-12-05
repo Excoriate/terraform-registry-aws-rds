@@ -247,9 +247,9 @@ tasks:
               fi
 
               tflint -v
-
               tflint --init
               tflint
+
         silent: true
     docs:
         desc: Generate Terraform docs

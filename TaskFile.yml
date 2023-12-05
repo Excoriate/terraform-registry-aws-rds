@@ -90,6 +90,14 @@ tasks:
   # Terraform task (modules)
   # (These tasks are used to run terraform commands in the examples directory)
   # ***********************
+    tf-clean-all:
+        desc: Clean all the terraform modules and recipes
+        cmds:
+            - |
+              for d in $(find . -type d -name .terraform); do
+                  echo "===========> Cleaning $d"
+                  rm -rf $d
+              done
     tf-init:
         desc: Initialize the terraform module
         cmds:
@@ -160,6 +168,13 @@ tasks:
             - task: tf:init
               vars: {TF_WORKING_DIR: '{{.TERRAFORM_RECIPES_DIR}}/{{.MODULE}}/{{.RECIPE}}'}
 
+    recipe-lint:
+        desc: Lint the terraform module's recipe
+        cmds:
+            - task: common:clean
+            - task: tf:lint
+              vars: {TF_WORKING_DIR: '{{.TERRAFORM_RECIPES_DIR}}/{{.MODULE}}/{{.RECIPE}}'}
+
     recipe-plan:
         desc: In the terraform module, execute a terraform plan
         cmds:
@@ -172,7 +187,6 @@ tasks:
     recipe-apply:
         desc: In the terraform module, execute a terraform apply
         cmds:
-            - task: common:clean
             - task: tf:init
               vars: {TF_WORKING_DIR: '{{.TERRAFORM_RECIPES_DIR}}/{{.MODULE}}/{{.RECIPE}}'}
             - task: tf:apply
@@ -181,7 +195,6 @@ tasks:
     recipe-destroy:
         desc: In the terraform module, execute a terraform destroy
         cmds:
-            - task: common:clean
             - task: tf:init
               vars: {TF_WORKING_DIR: '{{.TERRAFORM_RECIPES_DIR}}/{{.MODULE}}/{{.RECIPE}}'}
             - task: tf:destroy

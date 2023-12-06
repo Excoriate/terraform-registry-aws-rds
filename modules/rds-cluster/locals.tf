@@ -10,6 +10,8 @@ locals {
   is_cluster_storage_config_enabled           = !local.is_cluster_enabled ? false : var.cluster_storage_config == null ? false : length(var.cluster_storage_config) > 0
   is_cluster_serverless_config_enabled        = !local.is_cluster_enabled ? false : var.cluster_serverless_config == null ? false : length(var.cluster_serverless_config) > 0
   is_cluster_timeouts_config_enabled          = !local.is_cluster_enabled ? false : var.cluster_timeouts_config == null ? false : length(var.cluster_timeouts_config) > 0
+  is_cluster_iam_roles_config_enabled         = !local.is_cluster_enabled ? false : var.cluster_iam_roles_config == null ? false : length(var.cluster_iam_roles_config) > 0
+  is_cluster_subnet_group_config_enabled      = !local.is_cluster_enabled ? false : var.cluster_subnet_group_config == null ? false : length(var.cluster_subnet_group_config) > 0
 
   #################################################
   # Cluster config
@@ -140,6 +142,57 @@ locals {
   #################################################
   # Cluster timeouts configuration
   #################################################
+  cluster_timeouts_config_normalised = !local.is_cluster_timeouts_config_enabled ? [] : [
+    for cluster in var.cluster_timeouts_config : {
+      cluster_identifier = trimspace(cluster["cluster_identifier"])
+      create             = cluster["create"] == null ? "30m" : cluster["create"]
+      update             = cluster["update"] == null ? "30m" : cluster["update"]
+      delete             = cluster["delete"] == null ? "30m" : cluster["delete"]
+    }
+  ]
 
+  cluster_timeouts_config = !local.is_cluster_timeouts_config_enabled ? {} : {
+    for cluster in local.cluster_timeouts_config_normalised : cluster["cluster_identifier"] => cluster
+  }
 
+  #################################################
+  # Cluster IAM roles configuration
+  #################################################
+  cluster_iam_roles_config_normalised = !local.is_cluster_iam_roles_config_enabled ? [] : [
+    for cluster in var.cluster_iam_roles_config : {
+      cluster_identifier = trimspace(cluster["cluster_identifier"])
+      iam_roles = cluster["iam_roles"] == null ? [] : [
+        for role in cluster["iam_roles"] : trimspace(role)
+      ]
+      iam_database_authentication_enabled = cluster["iam_database_authentication_enabled"] == null ? false : cluster["iam_database_authentication_enabled"]
+    }
+  ]
+
+  cluster_iam_roles_config = !local.is_cluster_iam_roles_config_enabled ? {} : {
+    for cluster in local.cluster_iam_roles_config_normalised : cluster["cluster_identifier"] => cluster
+  }
+
+  #################################################
+  # Cluster Subnet Group configuration
+  #################################################
+  cluster_subnet_group_config_normalised = !local.is_cluster_subnet_group_config_enabled ? [] : [
+    for cluster in var.cluster_subnet_group_config : {
+      cluster_identifier = trimspace(cluster["cluster_identifier"])
+      subnet_ids = cluster["subnet_ids"] == null ? null : [
+        for subnet in cluster["subnet_ids"] : trimspace(subnet)
+      ]
+      vpc_id            = cluster["vpc_id"] == null ? null : trimspace(cluster["vpc_id"])
+      subnet_group_name = cluster["subnet_group_name"] == null ? null : trimspace(cluster["subnet_group_name"])
+      // Control attribute for subnet_ids and vpc_id
+      options = {
+        subnets_from_ids           = cluster["subnet_ids"] != null
+        subnets_from_vpc_id        = cluster["vpc_id"] != null
+        subnets_from_subgroup_name = cluster["subnet_group_name"] != null
+      }
+    }
+  ]
+
+  cluster_subnet_group_config = !local.is_cluster_subnet_group_config_enabled ? {} : {
+    for cluster in local.cluster_subnet_group_config_normalised : cluster["cluster_identifier"] => cluster
+  }
 }

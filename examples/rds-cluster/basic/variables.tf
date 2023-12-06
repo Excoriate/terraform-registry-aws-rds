@@ -188,9 +188,9 @@ EOF
 variable "cluster_timeouts_config" {
   type = list(object({
     cluster_identifier = string
-    create             = optional(string, "60m")
-    delete             = optional(string, "60m")
-    update             = optional(string, "60m")
+    create             = optional(string, "30m")
+    delete             = optional(string, "30m")
+    update             = optional(string, "30m")
   }))
   default     = null
   description = <<EOF
@@ -199,21 +199,49 @@ necessary configuration for the timeouts of the cluster. For more information ab
 see the terraform aws_rds_cluster resource documentation in: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/rds_cluster
 The supported attributes are:
   - cluster_identifier: (Required) The cluster identifier.
-  - create: (Optional) Time to wait for the cluster to be created. Defaults to 60 minutes.
-  - delete: (Optional) Time to wait for the cluster to be deleted. Defaults to 60 minutes.
-  - update: (Optional) Time to wait for the cluster to be updated. Defaults to 60 minutes.
+  - create: (Optional) Time to wait for the cluster to be created. Defaults to 30 minutes.
+  - delete: (Optional) Time to wait for the cluster to be deleted. Defaults to 30 minutes.
+  - update: (Optional) Time to wait for the cluster to be updated. Defaults to 30 minutes.
 EOF
 }
-
 
 variable "cluster_iam_roles_config" {
   type = list(object({
     cluster_identifier                  = string
     iam_roles                           = optional(list(string))
-    create_built_in_roles               = optional(bool, false)
     iam_database_authentication_enabled = optional(bool, false)
   }))
-  default = null
+  default     = null
+  description = <<EOF
+  List of cluster IAM roles configurations to create. This configuration encapsulates the
+necessary configuration for the IAM roles of the cluster. For more information about its validations,
+see the terraform aws_rds_cluster resource documentation in: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/rds_cluster
+The supported attributes are:
+  - cluster_identifier: (Required) The cluster identifier.
+  - iam_roles: (Optional) A List of ARNs for the IAM roles to associate to the RDS Cluster.
+  - iam_database_authentication_enabled: (Optional) Whether to enable mapping of AWS Identity and Access Management (IAM) accounts to database accounts. Default is false.
+EOF
+}
+
+variable "cluster_subnet_group_config" {
+  type = list(object({
+    cluster_identifier = string
+    subnet_ids         = optional(list(string))
+    subnet_group_name  = optional(string)
+    vpc_id             = optional(string)
+  }))
+  default     = null
+  description = <<EOF
+  List of cluster subnet group configurations to create. It works by either passing a list of subnet ids or a vpc id, from
+  which the module will create a subnet group with all the subnets in the vpc. For more information about its validations,
+  see the terraform aws_db_subnet_group resource documentation in: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/db_subnet_group
+  The supported attributes are:
+  - cluster_identifier: (Required) The cluster identifier.
+  - subnet_ids: (Optional) A list of VPC subnet IDs. If the VPC ID is provided, the module will create a subnet group with all the subnets in the VPC.
+  - subnet_group_name: (Optional) The name of the DB subnet group. If omitted, Terraform will assign a random, unique name.
+  - vpc_id: (Optional) The VPC ID. If the subnet_ids are provided, the module will create a subnet group with all the subnets in the VPC.
+At least one of subnet_ids or vpc_id must be provided.
+EOF
 }
 
 variable "cluster_security_groups_config" {

@@ -9,6 +9,7 @@ module "main_module" {
   cluster_serverless_config        = var.cluster_serverless_config
   cluster_timeouts_config          = var.cluster_timeouts_config
   cluster_iam_roles_config         = var.cluster_iam_roles_config
+  cluster_subnet_group_config      = var.cluster_subnet_group_config
   cluster_security_groups_config   = var.cluster_security_groups_config
   cluster_network_config           = var.cluster_network_config
 }

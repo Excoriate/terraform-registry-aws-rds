@@ -15,7 +15,13 @@ resource "aws_rds_cluster" "this" {
   master_username                 = lookup(each.value["options"], "ignore_admin_credentials", false) ? null : each.value["master_username"]
   master_password                 = lookup(each.value["options"], "ignore_admin_credentials", false) ? null : lookup(each.value["options"], "generate_random_password", false) ? random_password.this[each.key].result : each.value["master_password"]
   enabled_cloudwatch_logs_exports = each.value["enabled_cloudwatch_logs_exports"]
+  // Subnet group configuration
+  // 1. Precedence is given to the subnet_group_name if provided, if not, it follows the vpc_id, and if not, it follows the subnet_ids.
+  db_subnet_group_name = lookup(local.cluster_subnet_group_config[each.key]["options"], "subnets_from_vpc_id", false) ? aws_db_subnet_group.subnet_group_from_vpc_id[each.key].name : null
 
+  // IAM roles & permissions configuration
+  iam_roles                           = lookup({ for k, v in local.cluster_iam_roles_config : k => v["iam_roles"] if k == each.key }, each.key, null)
+  iam_database_authentication_enabled = lookup({ for k, v in local.cluster_iam_roles_config : k => v["iam_database_authentication_enabled"] if k == each.key }, each.key, null)
 
   // Engine configuration
   engine         = each.value["engine"]
@@ -45,7 +51,7 @@ resource "aws_rds_cluster" "this" {
   enable_http_endpoint = lookup({ for k, v in local.cluster_serverless_config : k => v["enable_http_endpoint"] if k == each.key }, each.key, null)
 
   dynamic "serverlessv2_scaling_configuration" {
-    for_each = lookup(local.cluster_serverless_config, each.key, null) != null && lookup(local.cluster_serverless_config, each.key)["scaling_configuration_for_v2"] != null && lookup(local.cluster_serverless_config, each.key)["scaling_configuration_for_v1"] == null ? [lookup(local.cluster_serverless_config, each.key)["scaling_configuration_for_v2"]] : []
+    for_each = local.cluster_serverless_config == null ? [] : lookup(local.cluster_serverless_config, each.key, null) == null ? [] : lookup(local.cluster_serverless_config, each.key)["scaling_configuration_for_v2"] == null ? [] : lookup(local.cluster_serverless_config, each.key)["scaling_configuration_for_v1"] != null ? [] : [lookup(local.cluster_serverless_config, each.key)["scaling_configuration_for_v2"]]
 
     content {
       max_capacity = serverlessv2_scaling_configuration.value["max_capacity"]
@@ -54,13 +60,22 @@ resource "aws_rds_cluster" "this" {
   }
 
   dynamic "scaling_configuration" {
-    for_each = lookup(local.cluster_serverless_config, each.key, null) != null && lookup(local.cluster_serverless_config, each.key)["scaling_configuration_for_v1"] != null && lookup(local.cluster_serverless_config, each.key)["scaling_configuration_for_v2"] == null ? [lookup(local.cluster_serverless_config, each.key)["scaling_configuration_for_v1"]] : []
+    for_each = local.cluster_serverless_config == null ? [] : lookup(local.cluster_serverless_config, each.key, null) == null ? [] : lookup(local.cluster_serverless_config, each.key)["scaling_configuration_for_v1"] == null ? [] : lookup(local.cluster_serverless_config, each.key)["scaling_configuration_for_v2"] != null ? [] : [lookup(local.cluster_serverless_config, each.key)["scaling_configuration"]]
 
     content {
       auto_pause               = scaling_configuration.value["auto_pause"]
       max_capacity             = scaling_configuration.value["max_capacity"]
       min_capacity             = scaling_configuration.value["min_capacity"]
       seconds_until_auto_pause = scaling_configuration.value["seconds_until_auto_pause"]
+    }
+  }
+
+  dynamic "timeouts" {
+    for_each = lookup(local.cluster_timeouts_config, each.key, null) != null ? [lookup(local.cluster_timeouts_config, each.key)] : []
+    content {
+      create = timeouts.value["create"]
+      delete = timeouts.value["delete"]
+      update = timeouts.value["update"]
     }
   }
 
@@ -73,18 +88,6 @@ resource "aws_rds_cluster" "this" {
     precondition {
       error_message = "The master_username must not be 'admin', since it's a reserved username."
       condition     = each.value["master_username"] != "admin"
-    }
-
-    precondition {
-      // If the locals.cluster_serverless_config has a key for this cluster, and the serverlessv2_scaling configuration is set, but the engine_mode is not provisioned, then fail. Why wait until the 'apply' step to fail?
-      error_message = "The engine_mode must be provisioned if the var.cluster_serverless_config has a key for this cluster."
-      condition     = lookup(local.cluster_serverless_config, each.key, null) == null || lookup(local.cluster_serverless_config, each.key, null)["scaling_configuration_for_v2"] == null || each.value["engine_mode"] == "provisioned"
-    }
-
-    // If the locals.cluster_serverless_config has a key for this cluster, and the serverless v1 scaling configuration is set, but the engine_mode is not serverless, then fail. Why wait until the 'apply' step to fail? it only applies if the serverless scaling configuration v2 is not set
-    precondition {
-      error_message = "The engine_mode must be serverless if the var.cluster_serverless_config has a key for this cluster and the scaling_config_v1 is set."
-      condition     = lookup(local.cluster_serverless_config, each.key, null) == null || lookup(local.cluster_serverless_config, each.key, null)["scaling_configuration_for_v2"] != null || lookup(local.cluster_serverless_config, each.key, null)["scaling_configuration_for_v1"] == null || each.value["engine_mode"] == "serverless"
     }
   }
 

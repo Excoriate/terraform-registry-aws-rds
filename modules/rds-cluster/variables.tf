@@ -25,7 +25,7 @@ variable "aws_region" {
 # Specific for this module
 ###################################
 variable "cluster_config" {
-  type = list(object({
+  type = object({
     cluster_identifier              = string
     database_name                   = optional(string)
     master_username                 = optional(string, "goduser")
@@ -36,10 +36,11 @@ variable "cluster_config" {
     replication_source_identifier   = optional(string)
     snapshot_identifier             = optional(string)
     enabled_cloudwatch_logs_exports = optional(list(string))
-  }))
+    is_secondary                    = optional(bool, false)
+  })
   default     = null
   description = <<EOF
-  List of cluster configurations to create. Each element of the list is an object that represents
+  Cluster configurations to create. Each element of the list is an object that represents
   a cluster configuration. For more information about its validations, see the terraform aws_rds_cluster
   resource documentation in: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/rds_cluster
   The current supported attributes are:
@@ -53,11 +54,12 @@ variable "cluster_config" {
   - replication_source_identifier: (Optional) ARN of a source DB cluster or DB instance if this DB cluster is to be created as a Read Replica.
   - snapshot_identifier: (Optional) The identifier for a DB snapshot from which you want to restore the new DB cluster.
   - enabled_cloudwatch_logs_exports: (Optional) List of log types to export to cloudwatch. If omitted, no logs will be exported. The following log types are supported: audit, error, general, slowquery, postgresql, upgrade
+  - is_secondary: (Optional) Whether this cluster is the secondary cluster of a global database cluster or not. Default is false.
 EOF
 }
 
 variable "cluster_backup_config" {
-  type = list(object({
+  type = object({
     cluster_identifier        = string
     backup_retention_period   = optional(number, 5)
     preferred_backup_window   = optional(string, "07:00-09:00")
@@ -66,9 +68,9 @@ variable "cluster_backup_config" {
     copy_tags_to_snapshot     = optional(bool, false)
     backtrack_window          = optional(number, 0)
     delete_automatic_backups  = optional(bool, false)
-  }))
+  })
   description = <<EOF
-  List of cluster backup configurations to create. Each element of the list is an object that represents
+  Cluster backup configurations to create. Each element of the list is an object that represents
   a cluster backup configuration. For more information about its validations, see the terraform aws_rds_cluster
   resource documentation in: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/rds_cluster
   The current supported attributes are:
@@ -86,15 +88,15 @@ EOF
 }
 
 variable "cluster_change_management_config" {
-  type = list(object({
+  type = object({
     cluster_identifier          = string
     apply_immediately           = optional(bool, false)
     allow_major_version_upgrade = optional(bool, false)
     maintenance_window          = optional(string, "sun:05:00-sun:07:00")
     deletion_protection         = optional(bool, false)
-  }))
+  })
   description = <<EOF
-  List of cluster change management configurations to create. This configuration encapsulates the
+  Cluster change management configurations to create. This configuration encapsulates the
   changes that will be applied to the cluster. The supported attributes are:
   - cluster_identifier: (Required) The cluster identifier.
   - apply_immediately: (Optional) Indicates whether the modifications in this request and any pending modifications are asynchronously applied as soon as possible, regardless of the PreferredMaintenanceWindow setting for the DB cluster. If this parameter is set to false, changes to the DB cluster are applied during the next maintenance window. The ApplyImmediately parameter only affects the NewDBClusterIdentifier and MasterUserPassword values. If you set this parameter value to false, the changes to the NewDBClusterIdentifier and MasterUserPassword values are applied during the next maintenance window. All other changes are applied immediately, regardless of the value of the ApplyImmediately parameter. Default is false.
@@ -106,14 +108,14 @@ EOF
 }
 
 variable "cluster_replication_config" {
-  type = list(object({
+  type = object({
     cluster_identifier             = string
     replication_source_identifier  = optional(string)
     replication_source_region      = optional(string)
     enable_global_write_forwarding = optional(bool, false)
-  }))
+  })
   description = <<EOF
-  List of cluster replication configurations to create. This configuration encapsulates the
+  Cluster configuration for replication configurations to create. This configuration encapsulates the
 necessary configuration for making this cluster a 'replica' or a 'secondary' of another cluster.
 The supported attributes are:
   - cluster_identifier: (Required) The cluster identifier.
@@ -125,17 +127,17 @@ EOF
 }
 
 variable "cluster_storage_config" {
-  type = list(object({
+  type = object({
     cluster_identifier = string
     storage_encrypted  = optional(bool, false)
     storage_type       = optional(string, "gp2")
     iops               = optional(number)
     allocated_storage  = optional(number)
     kms_key_id         = optional(string)
-  }))
+  })
   default     = null
   description = <<EOF
-  List of cluster storage configurations to create. This configuration encapsulates the
+  Cluster configuration for storage configurations to create. This configuration encapsulates the
 necessary configuration for the storage of the cluster. For more information about its validations,
 see the terraform aws_rds_cluster resource documentation in: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/rds_cluster and the related AWS documentation in: https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless.how-it-works.html
 The supported attributes are:
@@ -149,7 +151,7 @@ EOF
 }
 
 variable "cluster_serverless_config" {
-  type = list(object({
+  type = object({
     cluster_identifier   = string
     enable_http_endpoint = optional(bool, false)
     scaling_configuration_for_v2 = optional(object({
@@ -163,10 +165,10 @@ variable "cluster_serverless_config" {
       seconds_until_auto_pause = optional(number, 300)
       timeout_action           = optional(string, "ForceApplyCapacityChange")
     }))
-  }))
+  })
   default     = null
   description = <<EOF
-  List of cluster serverless configurations to create. This configuration encapsulates the
+  Cluster configuration for serverless configurations to create. This configuration encapsulates the
 necessary configuration for the serverless cluster. It also manages the scaling configuration
 for the cluster (serverlessv2). For more information about its validations, see the terraform aws_rds_cluster
 resource documentation in: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/rds_cluster and the related AWS documentation in: https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless.how-it-works.html
@@ -186,15 +188,15 @@ EOF
 }
 
 variable "cluster_timeouts_config" {
-  type = list(object({
+  type = object({
     cluster_identifier = string
     create             = optional(string, "30m")
     delete             = optional(string, "30m")
     update             = optional(string, "30m")
-  }))
+  })
   default     = null
   description = <<EOF
-  List of cluster timeouts configurations to create. This configuration encapsulates the
+  Cluster configuration for timeouts configurations to create. This configuration encapsulates the
 necessary configuration for the timeouts of the cluster. For more information about its validations,
 see the terraform aws_rds_cluster resource documentation in: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/rds_cluster
 The supported attributes are:
@@ -206,14 +208,14 @@ EOF
 }
 
 variable "cluster_iam_roles_config" {
-  type = list(object({
+  type = object({
     cluster_identifier                  = string
     iam_roles                           = optional(list(string))
     iam_database_authentication_enabled = optional(bool, false)
-  }))
+  })
   default     = null
   description = <<EOF
-  List of cluster IAM roles configurations to create. This configuration encapsulates the
+  Cluster configuration for IAM roles configurations to create. This configuration encapsulates the
 necessary configuration for the IAM roles of the cluster. For more information about its validations,
 see the terraform aws_rds_cluster resource documentation in: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/rds_cluster
 The supported attributes are:
@@ -224,15 +226,15 @@ EOF
 }
 
 variable "cluster_subnet_group_config" {
-  type = list(object({
+  type = object({
     cluster_identifier = string
     subnet_ids         = optional(list(string))
     subnet_group_name  = optional(string)
     vpc_id             = optional(string)
-  }))
+  })
   default     = null
   description = <<EOF
-  List of cluster subnet group configurations to create. It works by either passing a list of subnet ids or a vpc id, from
+  Cluster configuration for subnet group configurations to create. It works by either passing a list of subnet ids or a vpc id, from
   which the module will create a subnet group with all the subnets in the vpc. For more information about its validations,
   see the terraform aws_db_subnet_group resource documentation in: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/db_subnet_group
   The supported attributes are:
@@ -240,27 +242,47 @@ variable "cluster_subnet_group_config" {
   - subnet_ids: (Optional) A list of VPC subnet IDs. If the VPC ID is provided, the module will create a subnet group with all the subnets in the VPC.
   - subnet_group_name: (Optional) The name of the DB subnet group. If omitted, Terraform will assign a random, unique name.
   - vpc_id: (Optional) The VPC ID. If the subnet_ids are provided, the module will create a subnet group with all the subnets in the VPC.
-At least one of subnet_ids or vpc_id must be provided.
+The precedence order is: Subnet_group_name > Subnet_ids > Vpc_id
 EOF
 }
 
 variable "cluster_security_groups_config" {
-  type = list(object({
-    cluster_identifier                          = string
-    additional_security_group_ids               = optional(list(string))
-    allow_traffic_from_these_security_group_ids = optional(list(string))
-    allow_traffic_from_CIDR_blocks              = optional(list(string))
-    allow_all_outbound_traffic                  = optional(bool, false)
-  }))
-  default = null
+  type = object({
+    cluster_identifier                    = string
+    vpc_id                                = optional(string)
+    vpc_name                              = optional(string)
+    allow_traffic_from_database_members   = optional(bool, false)
+    allow_traffic_from_security_group_ids = optional(list(string))
+    allow_traffic_from_cidr_blocks        = optional(list(string))
+    allow_all_outbound_traffic            = optional(bool, false)
+    allow_all_inbound_traffic             = optional(bool, false)
+    db_port                               = number
+  })
+  default     = null
+  description = <<EOF
+  Cluster configuration for security group configurations to create. This configuration encapsulates the
+necessary configuration for the security groups of the cluster. For more information about its validations,
+see the terraform aws_rds_cluster resource documentation in: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/rds_cluster
+The supported attributes are:
+  - cluster_identifier: (Required) The cluster identifier.
+  - vpc_id: (Optional) The VPC ID. If the vpc_name is provided, the module will use the vpc_id of the vpc_name.
+  - vpc_name: (Optional) The VPC name. If the vpc_id is provided, the module will use the vpc_id.
+  - allow_traffic_from_database_members: (Optional) Whether to allow traffic from the database members or not. Default is false.
+  - allow_traffic_from_security_group_ids: (Optional) A list of security group ids to allow traffic from.
+  - allow_traffic_from_CIDR_blocks: (Optional) A list of CIDR blocks to allow traffic from.
+  - allow_all_outbound_traffic: (Optional) Whether to allow all outbound traffic or not. Default is false.
+  - allow_all_inbound_traffic: (Optional) Whether to allow all inbound traffic or not. Default is false. Not recommended.
+For more information about how security groups works in the context of RDS, and Aurora specifically, see the AWS documentation in: https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Integrating.Authorizing.html
+  - db_port: The port on which the DB accepts connections. Default is 5432.
+EOF
 }
 
 
 variable "cluster_network_config" {
-  type = list(object({
+  type = object({
     cluster_identifier     = string
     network_type           = optional(string)
     vpc_security_group_ids = optional(list(string))
-  }))
+  })
   default = null
 }

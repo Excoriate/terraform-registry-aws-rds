@@ -1,14 +1,21 @@
 locals {
+  ff_resource_create_cluster_primary   = !lookup(local.cluster_config, "create", false) ? {} : { for k, v in local.cluster_config["resource"] : k => v if !v["is_secondary"] }
+  ff_resource_create_cluster_secondary = !lookup(local.cluster_config, "create", false) ? {} : { for k, v in local.cluster_config["resource"] : k => v if v["is_secondary"] }
+  ff_resource_create                   = !lookup(local.cluster_config, "create", false) ? {} : lookup(local.cluster_config, "resource", {})
+
+  // Additional security groups
+  cfg_additional_security_group_ids = compact(flatten([join("", [for sg in aws_security_group.this : sg.id]), lookup(local.ff_resource_create_sg, "allow_traffic_from_security_group_ids", null)]))
 }
 
 resource "random_password" "this" {
-  for_each = local.cluster_config
+  for_each = local.ff_resource_create
   length   = 11
   special  = false
 }
 
-resource "aws_rds_cluster" "this" {
-  for_each           = local.cluster_config
+
+resource "aws_rds_cluster" "primary" {
+  for_each           = local.ff_resource_create_cluster_primary
   cluster_identifier = each.value["cluster_identifier"]
   // Credentials
   database_name                   = each.value["database_name"]
@@ -17,7 +24,7 @@ resource "aws_rds_cluster" "this" {
   enabled_cloudwatch_logs_exports = each.value["enabled_cloudwatch_logs_exports"]
   // Subnet group configuration
   // 1. Precedence is given to the subnet_group_name if provided, if not, it follows the vpc_id, and if not, it follows the subnet_ids.
-  db_subnet_group_name = lookup(local.cluster_subnet_group_config[each.key]["options"], "subnets_from_vpc_id", false) ? aws_db_subnet_group.subnet_group_from_vpc_id[each.key].name : null
+  db_subnet_group_name = !local.is_cluster_subnet_group_config_enabled ? null : lookup(local.cluster_subnet_group_config[each.key]["options"], "subnets_from_subgroup_name", false) ? lookup(local.cluster_subnet_group_config[each.key], "subnet_group_name", null) : lookup(local.cluster_subnet_group_config[each.key]["options"], "subnets_from_ids", false) ? aws_db_subnet_group.subnet_group_from_subnet_ids[each.key].name : lookup(local.cluster_subnet_group_config[each.key]["options"], "subnets_from_vpc_id", false) ? aws_db_subnet_group.subnet_group_from_vpc_id[each.key].name : null
 
   // IAM roles & permissions configuration
   iam_roles                           = lookup({ for k, v in local.cluster_iam_roles_config : k => v["iam_roles"] if k == each.key }, each.key, null)
@@ -49,6 +56,9 @@ resource "aws_rds_cluster" "this" {
 
   // Serverless specific configuration.
   enable_http_endpoint = lookup({ for k, v in local.cluster_serverless_config : k => v["enable_http_endpoint"] if k == each.key }, each.key, null)
+
+  // Security groups
+  vpc_security_group_ids = local.cfg_additional_security_group_ids
 
   dynamic "serverlessv2_scaling_configuration" {
     for_each = local.cluster_serverless_config == null ? [] : lookup(local.cluster_serverless_config, each.key, null) == null ? [] : lookup(local.cluster_serverless_config, each.key)["scaling_configuration_for_v2"] == null ? [] : lookup(local.cluster_serverless_config, each.key)["scaling_configuration_for_v1"] != null ? [] : [lookup(local.cluster_serverless_config, each.key)["scaling_configuration_for_v2"]]

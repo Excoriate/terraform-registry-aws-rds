@@ -4,7 +4,7 @@ locals {
   #################################################
   default_no_create = {
     create   = false
-    resource = null
+    resource = {}
   }
 
   default_create = {
@@ -16,40 +16,39 @@ locals {
   #################################################
   # Feature flags
   #################################################
-  is_enabled                                  = var.is_enabled
-  is_cluster_enabled                          = !local.is_enabled ? false : var.cluster_config != null
-  is_cluster_backup_config_enabled            = !local.is_cluster_enabled ? false : var.cluster_backup_config != null
-  is_cluster_change_management_config_enabled = !local.is_cluster_enabled ? false : var.cluster_change_management_config != null
-  is_cluster_replication_config_enabled       = !local.is_cluster_enabled ? false : var.cluster_replication_config != null
-  is_cluster_storage_config_enabled           = !local.is_cluster_enabled ? false : var.cluster_storage_config != null
-  is_cluster_serverless_config_enabled        = !local.is_cluster_enabled ? false : var.cluster_serverless_config != null
-  is_cluster_timeouts_config_enabled          = !local.is_cluster_enabled ? false : var.cluster_timeouts_config != null
-  is_cluster_iam_roles_config_enabled         = !local.is_cluster_enabled ? false : var.cluster_iam_roles_config != null
-  is_cluster_subnet_group_config_enabled      = !local.is_cluster_enabled ? false : var.cluster_subnet_group_config != null
-  is_cluster_security_groups_config_enabled   = !local.is_cluster_enabled ? false : var.cluster_security_groups_config != null
+  is_enabled                                         = var.is_enabled
+  is_cluster_enabled                                 = !local.is_enabled ? false : var.cluster_config != null
+  is_cluster_backup_config_enabled                   = !local.is_cluster_enabled ? false : var.cluster_backup_config != null
+  is_cluster_change_management_config_enabled        = !local.is_cluster_enabled ? false : var.cluster_change_management_config != null
+  is_cluster_replication_config_enabled              = !local.is_cluster_enabled ? false : var.cluster_replication_config != null
+  is_cluster_storage_config_enabled                  = !local.is_cluster_enabled ? false : var.cluster_storage_config != null
+  is_cluster_serverless_config_enabled               = !local.is_cluster_enabled ? false : var.cluster_serverless_config != null
+  is_cluster_timeouts_config_enabled                 = !local.is_cluster_enabled ? false : var.cluster_timeouts_config != null
+  is_cluster_iam_roles_config_enabled                = !local.is_cluster_enabled ? false : var.cluster_iam_roles_config != null
+  is_cluster_subnet_group_config_enabled             = !local.is_cluster_enabled ? false : var.cluster_subnet_group_config != null
+  is_cluster_security_groups_config_enabled          = !local.is_cluster_enabled ? false : var.cluster_security_groups_config != null
+  is_cluster_restore_to_point_in_time_config_enabled = !local.is_cluster_enabled ? false : var.cluster_restore_to_point_in_time_config != null
+  is_cluster_network_config_enabled                  = !local.is_cluster_enabled ? false : var.cluster_network_config != null
+  is_cluster_parameter_groups_config                 = !local.is_cluster_enabled ? false : var.cluster_parameter_groups_config != null
 
   #################################################
   # Cluster config
   #################################################
   cluster_config_normalised = !local.is_cluster_enabled ? [] : [
     {
-      cluster_identifier  = trimspace(var.cluster_config.cluster_identifier)
-      database_name       = var.cluster_config.database_name == null ? null : trimspace(var.cluster_config.database_name)
-      master_username     = var.cluster_config.master_username == null ? null : trimspace(var.cluster_config.master_username)
-      master_password     = var.cluster_config.master_password == null ? null : trimspace(var.cluster_config.master_password)
-      engine              = var.cluster_config.engine == null ? "aurora-postgresql" : trimspace(var.cluster_config.engine)
-      engine_mode         = var.cluster_config.engine_mode == null ? "provisioned" : trimspace(var.cluster_config.engine_mode)
-      engine_version      = var.cluster_config.engine_version == null ? null : trimspace(var.cluster_config.engine_version)
-      snapshot_identifier = var.cluster_config.snapshot_identifier == null ? null : trimspace(var.cluster_config.snapshot_identifier)
+      cluster_identifier          = trimspace(var.cluster_config.cluster_identifier)
+      database_name               = var.cluster_config.database_name == null ? null : trimspace(var.cluster_config.database_name)
+      master_username             = var.cluster_config.is_secondary || var.cluster_config.snapshot_identifier != null ? null : var.cluster_config.master_username == null ? "goduser" : trimspace(var.cluster_config.master_username)
+      manage_master_user_password = var.cluster_config.is_secondary
+      master_password             = var.cluster_config.is_secondary || var.cluster_config.snapshot_identifier != null ? null : var.cluster_config.master_password == null ? null : trimspace(var.cluster_config.master_password)
+      engine                      = var.cluster_config.engine == null ? "aurora-postgresql" : trimspace(var.cluster_config.engine)
+      engine_mode                 = var.cluster_config.engine_mode == null ? "provisioned" : trimspace(var.cluster_config.engine_mode)
+      engine_version              = var.cluster_config.engine_version == null ? null : trimspace(var.cluster_config.engine_version)
+      snapshot_identifier         = var.cluster_config.snapshot_identifier == null ? null : trimspace(var.cluster_config.snapshot_identifier)
       enabled_cloudwatch_logs_exports = var.cluster_config.enabled_cloudwatch_logs_exports == null ? [] : [
         for log in var.cluster_config.enabled_cloudwatch_logs_exports : trimspace(log)
       ]
       is_secondary = var.cluster_config.is_secondary == null ? false : var.cluster_config.is_secondary
-      // Set of options to manage a cluster configuration
-      options = {
-        generate_random_password = var.cluster_config.master_password == null
-        ignore_admin_credentials = var.cluster_config.master_username == null || var.cluster_config.master_password == null
-      }
     }
   ]
 
@@ -109,6 +108,7 @@ locals {
       replication_source_identifier   = var.cluster_replication_config.replication_source_identifier == null ? null : trimspace(var.cluster_replication_config.replication_source_identifier)
       replication_source_region       = var.cluster_replication_config.replication_source_region == null ? null : trimspace(var.cluster_replication_config.replication_source_region)
       enable_cluster_write_forwarding = var.cluster_replication_config.enable_cluster_write_forwarding == null ? false : var.cluster_replication_config.enable_cluster_write_forwarding
+      global_cluster_identifier       = var.cluster_replication_config.global_cluster_identifier == null ? null : trimspace(var.cluster_replication_config.global_cluster_identifier)
     }
   ]
 
@@ -227,6 +227,7 @@ locals {
       for cluster in local.cluster_subnet_group_config_normalised : cluster["cluster_identifier"] => cluster
     }
   })
+
   #################################################
   # Cluster security groups configuration
   #################################################
@@ -251,6 +252,68 @@ locals {
   cluster_security_groups_config = !local.is_cluster_security_groups_config_enabled ? local.default_no_create : merge(local.default_create, {
     resource = {
       for cluster in local.cluster_security_groups_config_normalised : cluster["cluster_identifier"] => cluster
+    }
+  })
+
+  #################################################
+  # Cluster restore to point in time configuration
+  #################################################
+  cluster_restore_to_point_in_time_config_normalised = !local.is_cluster_restore_to_point_in_time_config_enabled ? [] : [
+    {
+      cluster_identifier         = trimspace(var.cluster_restore_to_point_in_time_config.cluster_identifier)
+      source_cluster_identifier  = var.cluster_restore_to_point_in_time_config.source_cluster_identifier == "120m" ? null : trimspace(var.cluster_restore_to_point_in_time_config.source_cluster_identifier)
+      use_latest_restorable_time = var.cluster_restore_to_point_in_time_config.use_latest_restorable_time == null ? true : var.cluster_restore_to_point_in_time_config.use_latest_restorable_time
+      restore_type               = var.cluster_restore_to_point_in_time_config.restore_type == null ? "copy-on-write" : trimspace(var.cluster_restore_to_point_in_time_config.restore_type)
+    }
+  ]
+
+  cluster_restore_to_point_in_time_config = !local.is_cluster_restore_to_point_in_time_config_enabled ? local.default_no_create : merge(local.default_create, {
+    resource = {
+      for cluster in local.cluster_restore_to_point_in_time_config_normalised : cluster["cluster_identifier"] => cluster
+    }
+  })
+
+  #################################################
+  # Cluster network configuration
+  #################################################
+  cluster_network_config_normalised = !local.is_cluster_network_config_enabled ? [] : [
+    {
+      cluster_identifier = trimspace(var.cluster_network_config.cluster_identifier)
+      network_type       = var.cluster_network_config.network_type == null ? "IPv4" : trimspace(var.cluster_network_config.network_type)
+      additional_security_group_ids = var.cluster_network_config.additional_security_group_ids == null ? [] : [
+        for sg in var.cluster_network_config.additional_security_group_ids : trimspace(sg)
+      ]
+    }
+  ]
+
+  cluster_network_config = !local.is_cluster_network_config_enabled ? local.default_no_create : merge(local.default_create, {
+    resource = {
+      for cluster in local.cluster_network_config_normalised : cluster["cluster_identifier"] => cluster
+    }
+  })
+
+  #################################################
+  # Cluster parameter groups configuration
+  #################################################
+  cluster_parameter_groups_config_normalised = !local.is_cluster_parameter_groups_config ? [] : [
+    {
+      cluster_identifier          = trimspace(var.cluster_parameter_groups_config.cluster_identifier)
+      parameter_group_name        = var.cluster_parameter_groups_config.parameter_group_name == null ? format("cluster-%s-param-group", var.cluster_parameter_groups_config.cluster_identifier) : trimspace(var.cluster_parameter_groups_config.parameter_group_name)
+      parameter_group_description = format("Parameter group for cluster %s", var.cluster_parameter_groups_config.cluster_identifier)
+      parameter_group_family      = var.cluster_parameter_groups_config.parameter_group_family == null ? "aurora.5.6" : trimspace(var.cluster_parameter_groups_config.parameter_group_family)
+      parameters = var.cluster_parameter_groups_config.parameter == null ? [] : [
+        for param in var.cluster_parameter_groups_config.parameter : {
+          name         = trimspace(param["name"])
+          value        = trimspace(param["value"])
+          apply_method = param["apply_method"] == null ? "pending-reboot" : trimspace(param["apply_method"])
+        }
+      ]
+    }
+  ]
+
+  cluster_parameter_groups_config = !local.is_cluster_parameter_groups_config ? local.default_no_create : merge(local.default_create, {
+    resource = {
+      for cluster in local.cluster_parameter_groups_config_normalised : cluster["cluster_identifier"] => cluster
     }
   })
 }

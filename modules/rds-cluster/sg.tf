@@ -1,7 +1,7 @@
 locals {
-  ff_resource_create_sg = lookup(local.cluster_security_groups_config, "create", false) ? local.cluster_security_groups_config : {}
+  ff_resource_create_sg = !lookup(local.cluster_security_groups_config, "create", false) ? {} : local.cluster_security_groups_config["resource"]
 
-  ff_resource_create_sg_rule_allow_traffic_from_database_members = !lookup(local.ff_resource_create_sg, "allow_traffic_from_database_members", false) ? {} : local.ff_resource_create_sg
+  ff_resource_create_sg_rule_allow_traffic_from_database_members = !lookup(local.ff_resource_create_sg, "allow_traffic_from_database_members", false) ? {} : local.ff_resource_create_sg["resource"]
 
   ff_resource_create_sg_rule_allow_traffic_from_security_group_ids = lookup(local.ff_resource_create_sg, "allow_traffic_from_security_group_ids", null) == null ? {} : local.ff_resource_create_sg
 
@@ -21,18 +21,18 @@ resource "aws_security_group" "this" {
   lifecycle {
     precondition {
       error_message = "Either the VPC id or the VPC name should be provided."
-      condition     = local.cluster_security_groups_config == null || try(lookup(local.cluster_security_groups_config, each.key)["options"]["fetch_vpc_id_from_vpc_id"], null) != null || try(lookup(local.cluster_security_groups_config, each.key)["options"]["fetch_vpc_id_from_vpc_name"], null) != null
+      condition     = local.cluster_security_groups_config == null || try(lookup(local.cluster_security_groups_config, each.key, null)["options"]["fetch_vpc_id_from_vpc_id"], null) != null || try(lookup(local.cluster_security_groups_config, each.key, null)["options"]["fetch_vpc_id_from_vpc_name"], null) != null
     }
 
-    #    precondition {
-    #      error_message = "If the VPC ID is provided, should be a valid VPC id with the proper format"
-    #      condition     = local.cluster_security_groups_config == null || lookup(local.cluster_security_groups_config[each.key]["options"], "fetch_vpc_id_from_vpc_id", null) ? can(regex("vpc-[a-z0-9]{8,17}", data.aws_vpc.vpc_from_vpc_id[each.key].id)) : true
-    #    }
-    #
-    #    precondition {
-    #      error_message = "Either of the VPC id or the VPC name should be provided, but not both."
-    #      condition     = local.cluster_security_groups_config == null || lookup(local.cluster_security_groups_config[each.key]["options"], "fetch_vpc_id_from_vpc_id", null) && lookup(local.cluster_security_groups_config[each.key]["options"], "fetch_vpc_id_from_vpc_name", null)
-    #    }
+    precondition {
+      error_message = "If the VPC ID is provided, should be a valid VPC id with the proper format"
+      condition     = local.cluster_security_groups_config == null || lookup(local.cluster_parameter_groups_config, each.key, null) == null || lookup(local.cluster_security_groups_config[each.key]["options"], "fetch_vpc_id_from_vpc_id", null) && can(regex("vpc-[a-z0-9]{8,17}", data.aws_vpc.vpc_from_vpc_id[each.key].id))
+    }
+
+    precondition {
+      error_message = "Either of the VPC id or the VPC name should be provided, but not both."
+      condition     = local.cluster_security_groups_config == null || lookup(local.cluster_security_groups_config[each.key]["options"], "fetch_vpc_id_from_vpc_id", null) != null != lookup(local.cluster_security_groups_config[each.key]["options"], "fetch_vpc_id_from_vpc_name", null) != null
+    }
   }
 }
 

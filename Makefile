@@ -147,6 +147,15 @@ recipe-destroy: recipe-init
 		cd $(TERRAFORM_RECIPES_DIR)/$(MODULE)/$(RECIPE) && terraform destroy -auto-approve -var-file=config/$(VARS); \
 	fi
 
+recipe-lifecycle: recipe-init
+	@echo "In the terraform module, execute a terraform lifecycle"
+	@if [ -z "$(VARS)" ]; then \
+		echo "No vars file provided, skipping terraform lifecycle with vars."; \
+		cd $(TERRAFORM_RECIPES_DIR)/$(MODULE)/$(RECIPE) && terraform init && terraform plan && terraform apply -auto-approve && terraform destroy -auto-approve; \
+	else \
+		cd $(TERRAFORM_RECIPES_DIR)/$(MODULE)/$(RECIPE) && terraform init && terraform plan -var-file=config/$(VARS) && terraform apply -auto-approve -var-file=config/$(VARS) && terraform destroy -auto-approve -var-file=config/$(VARS); \
+	fi
+
 recipe-lint: clean
 	@echo "Run linting tasks for the terraform modules as part of the 'test-data' directory"
 	@cd $(TERRAFORM_RECIPES_DIR)/$(MODULE)/$(RECIPE) && tflint -v && tflint --init && tflint

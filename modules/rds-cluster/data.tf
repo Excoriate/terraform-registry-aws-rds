@@ -1,9 +1,5 @@
 locals {
   ff_data_fetch_subnets_by_vpc_id = local.ff_resource_create_subnet_group_by_vpc_id
-
-  ff_data_fetch_subnet_group_by_name = {
-    for k, v in local.ff_resource_create_subnet_group : k => v if lookup(v, "subnet_group_name", null) != null
-  }
 }
 
 data "aws_subnets" "fetch_subnets_by_vpc_id" {
@@ -12,11 +8,6 @@ data "aws_subnets" "fetch_subnets_by_vpc_id" {
     name   = "vpc-id"
     values = [each.value["vpc_id"]]
   }
-}
-
-data "aws_db_subnet_group" "this" {
-  for_each = local.ff_data_fetch_subnet_group_by_name
-  name     = each.value["db_subnet_group_name"]
 }
 
 locals {

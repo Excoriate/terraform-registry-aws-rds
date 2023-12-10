@@ -22,9 +22,10 @@
 These mono-repo contains a set of Terraform modules and recipes for provisioning AWS RDS resources. The modules are designed to be **composable**, and **opinionated**. The recipes are designed to be **easy to understand**, and **easy to use**.
 In the following table are listed the modules included in this repository:
 
-| Module                       | Description                            |
-|------------------------------|----------------------------------------|
-| [default](./modules/default) | Example (boilerplate/template) module. |
+| Module                                           | Description                                                                               |
+|--------------------------------------------------|-------------------------------------------------------------------------------------------|
+| ✅**Stable** [default](./modules/default)         | Example module (boilerplate/template) module.                                             |
+| ✅**Stable** [rds-cluster](./modules/rds-cluster) | Full battle-tested RDS cluster module (Aurora, Postgres, etc. Single, or Global clusters) |
 
 ---
 

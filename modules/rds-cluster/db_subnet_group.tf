@@ -1,5 +1,5 @@
 locals {
-  ff_resource_create_subnet_group = !lookup(local.cluster_subnet_group_config, "create", false) ? {} : { for k, v in local.cluster_subnet_group_config["resources"] : k => v if lookup(v, "create", false) }
+  ff_resource_create_subnet_group = !lookup(local.cluster_subnet_group_config, "create", false) ? {} : { for k, v in local.cluster_subnet_group_config["resource"] : k => v if lookup(v, "create", false) }
 
   ff_resource_create_subnet_group_by_vpc_id = { for k, v in local.ff_resource_create_subnet_group : k => v if lookup(v, "vpc_id", null) != null }
 

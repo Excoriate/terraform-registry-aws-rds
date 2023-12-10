@@ -15,11 +15,11 @@ variable "tags" {
 ###################################
 # AWS and provider's specific configuration
 ###################################
-variable "aws_region" {
-  type        = string
-  default     = "us-east-1"
-  description = "AWS region to deploy to"
-}
+#variable "aws_region" {
+#  type        = string
+#  default     = "us-east-1"
+#  description = "AWS region to deploy to"
+#}
 
 ###################################
 # Specific for this module
@@ -113,6 +113,7 @@ variable "cluster_replication_config" {
     replication_source_identifier  = optional(string)
     replication_source_region      = optional(string)
     enable_global_write_forwarding = optional(bool, false)
+    global_cluster_identifier      = optional(string)
   })
   description = <<EOF
   Cluster configuration for replication configurations to create. This configuration encapsulates the
@@ -122,6 +123,8 @@ The supported attributes are:
   - replication_source_identifier: (Optional) The Amazon Resource Name (ARN) of the source DB instance or DB cluster if this DB cluster is created as a read replica.
   - replication_source_region: (Optional) The region of the source DB instance or DB cluster if this DB cluster is created as a read replica.
   - enable_global_write_forwarding: (Optional) Enable write forwarding for a cluster in a different region. Default is false.
+  - global_cluster_identifier: (Optional) The global cluster identifier of an Aurora cluster that becomes the primary cluster in the new global database cluster. Works only
+if this cluster is set to 'secondary', and the primary cluster is in a different region.
 EOF
   default     = null
 }
@@ -277,12 +280,68 @@ For more information about how security groups works in the context of RDS, and 
 EOF
 }
 
+variable "cluster_restore_to_point_in_time_config" {
+  type = object({
+    cluster_identifier         = string
+    source_cluster_identifier  = optional(string, "120m")
+    restore_type               = optional(string, "copy-on-write")
+    use_latest_restorable_time = optional(bool, true)
+  })
+  default     = null
+  description = <<EOF
+  Cluster configuration for restore to point in time configurations to create. This configuration encapsulates the
+necessary configuration for the restore to point in time of the cluster. For more information about its validations,
+see the terraform aws_rds_cluster resource documentation in: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/rds_cluster
+The supported attributes are:
+  - cluster_identifier: (Required) The cluster identifier.
+  - source_cluster_identifier: (Optional) The identifier of the source cluster from which to restore.
+  - restore_type: (Optional) The type of restore to be performed. Valid values are copy-on-write, which creates a new cluster from a snapshot and then restores data into it, and point-in-time, which restores data from an existing cluster into a new cluster based on the specified time. Default is copy-on-write.
+  - use_latest_restorable_time: (Optional) Specifies whether (true) or not (false) the DB cluster is restored from the latest backup time. Default is true.
+EOF
+}
+
 
 variable "cluster_network_config" {
   type = object({
-    cluster_identifier     = string
-    network_type           = optional(string)
-    vpc_security_group_ids = optional(list(string))
+    cluster_identifier            = string
+    network_type                  = optional(string, "IPV4")
+    additional_security_group_ids = optional(list(string), [])
   })
-  default = null
+  default     = null
+  description = <<EOF
+  Cluster configuration for network configurations to create. This configuration encapsulates the
+necessary configuration for the network of the cluster. For more information about its validations,
+see the terraform aws_rds_cluster resource documentation in: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/rds_cluster
+The supported attributes are:
+  - cluster_identifier: (Required) The cluster identifier.
+  - network_type: (Optional) The type of network to create. Valid values are IPV4, and DUAL. Default is IPV4.
+  - additional_security_group_ids: (Optional) A list of additional security group IDs to allow access to from the cluster. These sg's should be in the same VPC. Default is [].
+EOF
+}
+
+variable "cluster_parameter_groups_config" {
+  type = object({
+    cluster_identifier     = string
+    parameter_group_name   = optional(string)
+    parameter_group_family = optional(string, "aurora.5.6")
+    parameters = optional(list(object({
+      name         = string
+      value        = string
+      apply_method = optional(string, "pending-reboot")
+    })))
+  })
+  default     = null
+  description = <<EOF
+  Cluster configuration for parameter groups configurations to create. This configuration encapsulates the
+necessary configuration for the parameter groups of the cluster. For more information about its validations,
+see the terraform aws_rds_cluster resource documentation in: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/rds_cluster
+The supported attributes are:
+  - cluster_identifier: (Required) The cluster identifier.
+  - parameter_group_name: (Optional) The name of the DB parameter group to associate with this DB cluster.
+  - parameter_group_family: (Optional) The family of the DB parameter group.
+  - parameters: (Optional) A list of DB parameters to apply.
+  - parameters.name: (Required) The name of the DB parameter.
+  - parameters.value: (Required) The value of the DB parameter.
+  - parameters.apply_method: (Optional) Indicates when to apply parameter updates. Can be immediate or pending-reboot. Default is pending-reboot.
+EOF
 }

@@ -251,15 +251,14 @@ EOF
 
 variable "cluster_security_groups_config" {
   type = object({
-    cluster_identifier                    = string
-    vpc_id                                = optional(string)
-    vpc_name                              = optional(string)
-    allow_traffic_from_database_members   = optional(bool, false)
-    allow_traffic_from_security_group_ids = optional(list(string))
-    allow_traffic_from_cidr_blocks        = optional(list(string))
-    allow_all_outbound_traffic            = optional(bool, false)
-    allow_all_inbound_traffic             = optional(bool, false)
-    db_port                               = number
+    cluster_identifier                  = string
+    vpc_id                              = optional(string)
+    vpc_name                            = optional(string)
+    allow_traffic_from_database_members = optional(bool, false)
+    allow_traffic_from_cidr_blocks      = optional(list(string))
+    allow_all_outbound_traffic          = optional(bool, false)
+    allow_all_inbound_traffic           = optional(bool, false)
+    db_port                             = number
   })
   default     = null
   description = <<EOF
@@ -271,12 +270,33 @@ The supported attributes are:
   - vpc_id: (Optional) The VPC ID. If the vpc_name is provided, the module will use the vpc_id of the vpc_name.
   - vpc_name: (Optional) The VPC name. If the vpc_id is provided, the module will use the vpc_id.
   - allow_traffic_from_database_members: (Optional) Whether to allow traffic from the database members or not. Default is false.
-  - allow_traffic_from_security_group_ids: (Optional) A list of security group ids to allow traffic from.
   - allow_traffic_from_CIDR_blocks: (Optional) A list of CIDR blocks to allow traffic from.
   - allow_all_outbound_traffic: (Optional) Whether to allow all outbound traffic or not. Default is false.
   - allow_all_inbound_traffic: (Optional) Whether to allow all inbound traffic or not. Default is false. Not recommended.
 For more information about how security groups works in the context of RDS, and Aurora specifically, see the AWS documentation in: https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Integrating.Authorizing.html
   - db_port: The port on which the DB accepts connections. Default is 5432.
+EOF
+}
+
+variable "cluster_security_groups_allowed_config" {
+  type = list(object({
+    cluster_identifier = string
+    security_group_id  = string
+    db_port            = number
+    vpc_id             = optional(string)
+    vpc_name           = optional(string)
+  }))
+  default     = null
+  description = <<EOF
+  Cluster configuration for security group configurations to create. This configuration encapsulates the
+necessary configuration for the security groups of the cluster. For more information about its validations,
+see the terraform aws_rds_cluster resource documentation in: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/rds_cluster
+The supported attributes are:
+  - cluster_identifier: (Required) The cluster identifier.
+  - security_group_id: (Optional) A list of additional security group IDs to allow access to from the cluster. These sg's should be in the same VPC. Default is [].
+  - db_port: The port on which the DB accepts connections. Default is 5432.
+  - vpc_id: (Optional) The VPC ID. If the vpc_name is provided, the module will use the vpc_id of the vpc_name.
+  - vpc_name: (Optional) The VPC name. If the vpc_id is provided, the module will use the vpc_id.
 EOF
 }
 

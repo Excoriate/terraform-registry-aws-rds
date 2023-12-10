@@ -11,6 +11,7 @@ module "main_module" {
   cluster_iam_roles_config                = var.cluster_iam_roles_config
   cluster_subnet_group_config             = var.cluster_subnet_group_config
   cluster_security_groups_config          = var.cluster_security_groups_config
+  cluster_security_groups_allowed_config  = var.cluster_security_groups_allowed_config
   cluster_restore_to_point_in_time_config = var.cluster_restore_to_point_in_time_config
   cluster_parameter_groups_config         = var.cluster_parameter_groups_config
   cluster_network_config                  = var.cluster_network_config

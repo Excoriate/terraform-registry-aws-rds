@@ -29,7 +29,8 @@ locals {
   is_cluster_security_groups_config_enabled          = !local.is_cluster_enabled ? false : var.cluster_security_groups_config != null
   is_cluster_restore_to_point_in_time_config_enabled = !local.is_cluster_enabled ? false : var.cluster_restore_to_point_in_time_config != null
   is_cluster_network_config_enabled                  = !local.is_cluster_enabled ? false : var.cluster_network_config != null
-  is_cluster_parameter_groups_config                 = !local.is_cluster_enabled ? false : var.cluster_parameter_groups_config != null
+  is_cluster_parameter_groups_config_enabled         = !local.is_cluster_enabled ? false : var.cluster_parameter_groups_config != null
+  is_cluster_security_groups_allowed_config_enabled  = !local.is_cluster_enabled ? false : var.cluster_security_groups_allowed_config != null
 
   #################################################
   # Cluster config
@@ -238,9 +239,6 @@ locals {
       vpc_name                            = var.cluster_security_groups_config.vpc_name == null ? null : trimspace(var.cluster_security_groups_config.vpc_name)
       db_port                             = var.cluster_security_groups_config.db_port == null ? 5432 : var.cluster_security_groups_config.db_port
       allow_traffic_from_database_members = var.cluster_security_groups_config.allow_traffic_from_database_members == null ? false : var.cluster_security_groups_config.allow_traffic_from_database_members
-      allow_traffic_from_security_group_ids = var.cluster_security_groups_config.allow_traffic_from_security_group_ids == null ? [] : [
-        for sg in var.cluster_security_groups_config.allow_traffic_from_security_group_ids : trimspace(sg)
-      ]
       allow_traffic_from_cidr_blocks = var.cluster_security_groups_config.allow_traffic_from_cidr_blocks == null ? [] : [
         for cidr in var.cluster_security_groups_config.allow_traffic_from_cidr_blocks : trimspace(cidr)
       ]
@@ -295,7 +293,7 @@ locals {
   #################################################
   # Cluster parameter groups configuration
   #################################################
-  cluster_parameter_groups_config_normalised = !local.is_cluster_parameter_groups_config ? [] : [
+  cluster_parameter_groups_config_normalised = !local.is_cluster_parameter_groups_config_enabled ? [] : [
     {
       cluster_identifier          = trimspace(var.cluster_parameter_groups_config.cluster_identifier)
       parameter_group_name        = var.cluster_parameter_groups_config.parameter_group_name == null ? format("cluster-%s-param-group", var.cluster_parameter_groups_config.cluster_identifier) : trimspace(var.cluster_parameter_groups_config.parameter_group_name)
@@ -311,9 +309,29 @@ locals {
     }
   ]
 
-  cluster_parameter_groups_config = !local.is_cluster_parameter_groups_config ? local.default_no_create : merge(local.default_create, {
+  cluster_parameter_groups_config = !local.is_cluster_parameter_groups_config_enabled ? local.default_no_create : merge(local.default_create, {
     resource = {
       for cluster in local.cluster_parameter_groups_config_normalised : cluster["cluster_identifier"] => cluster
+    }
+  })
+
+  #################################################
+  # Security groups (additional)
+  #################################################
+  cluster_security_groups_allowed_config_normalised = !local.is_cluster_security_groups_allowed_config_enabled ? [] : [
+    for cluster in var.cluster_security_groups_allowed_config : {
+      cluster_identifier = trimspace(cluster["cluster_identifier"])
+      security_group_id = cluster["security_group_id"] == null ? [] : [
+        for sg in cluster["security_group_id"] : trimspace(sg)
+      ]
+      vpc_name = cluster["vpc_name"] == null ? null : trimspace(cluster["vpc_name"])
+      vpc_id   = cluster["vpc_id"] == null ? null : trimspace(cluster["vpc_id"])
+      db_port  = cluster["db_port"] == null ? 5432 : cluster["db_port"]
+  }]
+
+  cluster_security_groups_allowed_config = !local.is_cluster_security_groups_allowed_config_enabled ? local.default_no_create : merge(local.default_create, {
+    resource = {
+      for cluster in local.cluster_security_groups_allowed_config_normalised : cluster["cluster_identifier"] => cluster
     }
   })
 }

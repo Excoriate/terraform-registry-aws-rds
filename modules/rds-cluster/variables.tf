@@ -89,19 +89,19 @@ EOF
 
 variable "cluster_change_management_config" {
   type = object({
-    cluster_identifier          = string
-    apply_immediately           = optional(bool, false)
-    allow_major_version_upgrade = optional(bool, false)
-    maintenance_window          = optional(string, "sun:05:00-sun:07:00")
-    deletion_protection         = optional(bool, false)
+    cluster_identifier           = string
+    apply_immediately            = optional(bool, false)
+    allow_major_version_upgrade  = optional(bool, false)
+    preferred_maintenance_window = optional(string, "sun:05:00-sun:07:00")
+    deletion_protection          = optional(bool, false)
   })
   description = <<EOF
   Cluster change management configurations to create. This configuration encapsulates the
   changes that will be applied to the cluster. The supported attributes are:
   - cluster_identifier: (Required) The cluster identifier.
-  - apply_immediately: (Optional) Indicates whether the modifications in this request and any pending modifications are asynchronously applied as soon as possible, regardless of the PreferredMaintenanceWindow setting for the DB cluster. If this parameter is set to false, changes to the DB cluster are applied during the next maintenance window. The ApplyImmediately parameter only affects the NewDBClusterIdentifier and MasterUserPassword values. If you set this parameter value to false, the changes to the NewDBClusterIdentifier and MasterUserPassword values are applied during the next maintenance window. All other changes are applied immediately, regardless of the value of the ApplyImmediately parameter. Default is false.
+  - apply_immediately: (Optional) Indicates whether the modifications in this request and any pending modifications are asynchronously applied as soon as possible, regardless of the PreferredMaintenance Window setting for the DB cluster. If this parameter is set to false, changes to the DB cluster are applied during the next maintenance window. The ApplyImmediately parameter only affects the NewDBClusterIdentifier and MasterUserPassword values. If you set this parameter value to false, the changes to the NewDBClusterIdentifier and MasterUserPassword values are applied during the next maintenance window. All other changes are applied immediately, regardless of the value of the ApplyImmediately parameter. Default is false.
   - allow_major_version_upgrade: (Optional) Indicates that major version upgrades are allowed. Changing this parameter doesn't result in an outage and the change is asynchronously applied as soon as possible. Constraints: This parameter must be set to true when specifying a value for the EngineVersion parameter that is a different major version than the DB cluster's current version.
-  - maintenance_window: (Optional) The weekly time range during which system maintenance can occur, in Universal Coordinated Time (UTC). For more information, see Amazon RDS Maintenance Window. Format: ddd:hh24:mi-ddd:hh24:mi. Valid Days: Mon, Tue, Wed, Thu, Fri, Sat, Sun. Constraints: Minimum 30-minute window.
+  - preferred_maintenance_window: (Optional) The weekly time range during which system maintenance can occur, in Universal Coordinated Time (UTC). For more information, see Amazon RDS Maintenance Window. Format: ddd:hh24:mi-ddd:hh24:mi. Valid Days: Mon, Tue, Wed, Thu, Fri, Sat, Sun. Constraints: Minimum 30-minute window.
   - deletion_protection: (Optional) If the DB cluster is a read replica, then set this to true in order to prevent it from being deleted when it is identified by Terraform as a managed replica of another DB cluster. Defaults to false.
 EOF
   default     = null

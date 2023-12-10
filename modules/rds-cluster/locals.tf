@@ -85,11 +85,11 @@ locals {
   #################################################
   cluster_change_management_normalised = !local.is_cluster_change_management_config_enabled ? [] : [
     {
-      cluster_identifier          = var.cluster_change_management_config.cluster_identifier
-      apply_immediately           = var.cluster_change_management_config.apply_immediately == null ? false : var.cluster_change_management_config.apply_immediately
-      allow_major_version_upgrade = var.cluster_change_management_config.allow_major_version_upgrade == null ? false : var.cluster_change_management_config.allow_major_version_upgrade
-      maintenance_window          = var.cluster_change_management_config.maintenance_window == null ? null : trimspace(var.cluster_change_management_config.maintenance_window)
-      deletion_protection         = var.cluster_change_management_config.deletion_protection == null ? false : var.cluster_change_management_config.deletion_protection
+      cluster_identifier           = var.cluster_change_management_config.cluster_identifier
+      apply_immediately            = var.cluster_change_management_config.apply_immediately == null ? false : var.cluster_change_management_config.apply_immediately
+      allow_major_version_upgrade  = var.cluster_change_management_config.allow_major_version_upgrade == null ? false : var.cluster_change_management_config.allow_major_version_upgrade
+      preferred_maintenance_window = var.cluster_change_management_config.preferred_maintenance_window == null ? null : trimspace(var.cluster_change_management_config.preferred_maintenance_window)
+      deletion_protection          = var.cluster_change_management_config.deletion_protection == null ? false : var.cluster_change_management_config.deletion_protection
     }
   ]
 
@@ -146,12 +146,12 @@ locals {
       cluster_identifier   = trimspace(var.cluster_serverless_config.cluster_identifier)
       enable_http_endpoint = var.cluster_serverless_config.enable_http_endpoint == null ? false : var.cluster_serverless_config.enable_http_endpoint
       // For v2
-      scaling_configuration_for_v2 = var.cluster_serverless_config.scaling_configuration_for_v2 == null ? {} : {
+      scaling_configuration_for_v2 = var.cluster_serverless_config.scaling_configuration_for_v2 == null ? null : {
         max_capacity = var.cluster_serverless_config.scaling_configuration_for_v2.max_capacity == null ? 2 : var.cluster_serverless_config.scaling_configuration_for_v2.max_capacity
         min_capacity = var.cluster_serverless_config.scaling_configuration_for_v2.min_capacity == null ? 2 : var.cluster_serverless_config.scaling_configuration_for_v2.min_capacity
       }
       // For v1
-      scaling_configuration_for_v1 = var.cluster_serverless_config.scaling_configuration_for_v1 == null ? {} : {
+      scaling_configuration_for_v1 = var.cluster_serverless_config.scaling_configuration_for_v1 == null ? null : {
         auto_pause               = var.cluster_serverless_config.scaling_configuration_for_v1.auto_pause == null ? true : var.cluster_serverless_config.scaling_configuration_for_v1.auto_pause
         max_capacity             = var.cluster_serverless_config.scaling_configuration_for_v1.max_capacity == null ? 2 : var.cluster_serverless_config.scaling_configuration_for_v1.max_capacity
         min_capacity             = var.cluster_serverless_config.scaling_configuration_for_v1.min_capacity == null ? 2 : var.cluster_serverless_config.scaling_configuration_for_v1.min_capacity

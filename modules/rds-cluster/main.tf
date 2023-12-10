@@ -8,6 +8,9 @@ locals {
   cfg_sg_allow_traffic_from_sg_ids = compact(flatten([join("", [for sg in aws_security_group.this : sg.id]), lookup(local.ff_resource_create_sg, "allow_traffic_from_security_group_ids", null)]))
 
   cfg_network_additional_security_group_ids = !lookup(local.cluster_network_config, "create", false) ? {} : lookup(local.cluster_network_config, "resource", {})
+
+  // Serverless
+  ff_cfg_enable_serverless = !lookup(local.cluster_serverless_config, "create", false) ? {} : lookup(local.cluster_serverless_config, "resource", {})
 }
 
 resource "random_password" "this" {
@@ -109,7 +112,7 @@ resource "aws_rds_cluster" "primary" {
   enable_http_endpoint = !lookup(local.cluster_serverless_config, "create", false) ? null : lookup(local.cluster_serverless_config, "resource", {})[each.key]["enable_http_endpoint"]
 
   dynamic "serverlessv2_scaling_configuration" {
-    for_each = !lookup(local.cluster_serverless_config, "create", false) ? [] : lookup(local.cluster_serverless_config, "resource", {})[each.key]["scaling_configuration_for_v2"] == null ? [] : lookup(local.cluster_serverless_config, "resource", {})[each.key]["scaling_configuration_for_v1"] != null ? [] : [lookup(local.cluster_serverless_config, "resource", {})[each.key]["scaling_configuration_for_v2"]]
+    for_each = lookup(local.ff_cfg_enable_serverless, each.key, null) == null ? [] : lookup(local.ff_cfg_enable_serverless[each.key], "scaling_configuration_for_v2", null) == null ? [] : [lookup(local.ff_cfg_enable_serverless[each.key], "scaling_configuration_for_v2", null)]
 
     content {
       max_capacity = serverlessv2_scaling_configuration.value["max_capacity"]
@@ -118,7 +121,7 @@ resource "aws_rds_cluster" "primary" {
   }
 
   dynamic "scaling_configuration" {
-    for_each = !lookup(local.cluster_serverless_config, "create", false) ? [] : lookup(local.cluster_serverless_config, "resource", {})[each.key]["scaling_configuration_for_v1"] == null ? [] : lookup(local.cluster_serverless_config, "resource", {})[each.key]["scaling_configuration_for_v2"] != null ? [] : [lookup(local.cluster_serverless_config, "resource", {})[each.key]["scaling_configuration_for_v1"]]
+    for_each = lookup(local.ff_cfg_enable_serverless, each.key, null) == null ? [] : lookup(local.ff_cfg_enable_serverless[each.key], "scaling_configuration_for_v1", null) == null ? [] : [lookup(local.ff_cfg_enable_serverless[each.key], "scaling_configuration_for_v1", null)]
 
     content {
       auto_pause               = scaling_configuration.value["auto_pause"]
@@ -138,7 +141,7 @@ resource "aws_rds_cluster" "primary" {
 
 
   dynamic "timeouts" {
-    for_each = !lookup(local.cluster_timeouts_config, "create", false) ? [] : lookup(local.cluster_timeouts_config, "resource", {})[each.key]
+    for_each = !lookup(local.cluster_timeouts_config, "create", false) ? {} : lookup(local.cluster_timeouts_config, each.key, {})
     content {
       create = timeouts.value["create"]
       delete = timeouts.value["delete"]

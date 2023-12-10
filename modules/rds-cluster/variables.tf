@@ -36,6 +36,7 @@ variable "cluster_config" {
     replication_source_identifier   = optional(string)
     snapshot_identifier             = optional(string)
     enabled_cloudwatch_logs_exports = optional(list(string))
+    db_cluster_instance_class       = optional(string)
     is_secondary                    = optional(bool, false)
   })
   default     = null
@@ -54,6 +55,7 @@ variable "cluster_config" {
   - replication_source_identifier: (Optional) ARN of a source DB cluster or DB instance if this DB cluster is to be created as a Read Replica.
   - snapshot_identifier: (Optional) The identifier for a DB snapshot from which you want to restore the new DB cluster.
   - enabled_cloudwatch_logs_exports: (Optional) List of log types to export to cloudwatch. If omitted, no logs will be exported. The following log types are supported: audit, error, general, slowquery, postgresql, upgrade
+  - db_cluster_instance_class: (Optional) The instance class to use. For details on CPU and memory, see Scaling Aurora PostgreSQL DB clusters. Defaults to db.r5.large.
   - is_secondary: (Optional) Whether this cluster is the secondary cluster of a global database cluster or not. Default is false.
 EOF
 }

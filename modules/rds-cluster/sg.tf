@@ -46,7 +46,7 @@ resource "aws_security_group_rule" "allow_inbound_traffic_from_cidr_blocks" {
 }
 
 resource "aws_security_group_rule" "allow_outbound_all_traffic" {
-  for_each          = { for k, v in local.ff_resource_create_sg : k => v if lookup(v, "allow_outbound_traffic", false) }
+  for_each          = { for k, v in local.ff_resource_create_sg : k => v if lookup(v, "allow_all_outbound_traffic", false) }
   description       = "Allow outbound traffic"
   type              = "egress"
   from_port         = 0
@@ -57,7 +57,7 @@ resource "aws_security_group_rule" "allow_outbound_all_traffic" {
 }
 
 resource "aws_security_group_rule" "allow_inbound_all_traffic" {
-  for_each          = { for k, v in local.ff_resource_create_sg : k => v if lookup(v, "allow_inbound_traffic", false) }
+  for_each          = { for k, v in local.ff_resource_create_sg : k => v if lookup(v, "allow_all_inbound_traffic", false) }
   description       = "Allow inbound traffic"
   type              = "ingress"
   from_port         = 0

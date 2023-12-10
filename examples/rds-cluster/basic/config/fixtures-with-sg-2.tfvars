@@ -18,6 +18,9 @@ cluster_timeouts_config = {
 }
 
 cluster_security_groups_config = {
-  cluster_identifier = "test-cluster-1"
-  db_port            = 5432
+  cluster_identifier                  = "test-cluster-1"
+  db_port                             = 5432
+  allow_traffic_from_database_members = true
+  allow_all_outbound_traffic          = true
+  allow_all_inbound_traffic           = true
 }

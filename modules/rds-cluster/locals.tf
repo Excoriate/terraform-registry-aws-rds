@@ -49,7 +49,8 @@ locals {
       enabled_cloudwatch_logs_exports = var.cluster_config.enabled_cloudwatch_logs_exports == null ? [] : [
         for log in var.cluster_config.enabled_cloudwatch_logs_exports : trimspace(log)
       ]
-      is_secondary = var.cluster_config.is_secondary == null ? false : var.cluster_config.is_secondary
+      db_cluster_instance_class = var.cluster_config.db_cluster_instance_class == null ? null : trimspace(var.cluster_config.db_cluster_instance_class)
+      is_secondary              = var.cluster_config.is_secondary == null ? false : var.cluster_config.is_secondary
     }
   ]
 

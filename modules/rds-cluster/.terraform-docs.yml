@@ -25,7 +25,40 @@ content: |-
     For module composition, It's recommended to take a look at the module's `outputs` to understand what's available:
     ```hcl
     {{ include "outputs.tf" }}
+
     ```
+
+    Recipes are included - Some of them are described as follows:
+    "Basic configuration" - This recipe is used to create a basic RDS Cluster.
+    ```hcl
+      {{ include "../../examples/rds-cluster/basic/config/fixtures.tfvars" }}
+
+    ```
+
+    With backup
+    ```hcl
+      {{ include "../../examples/rds-cluster/basic/config/fixtures-with-backup.tfvars" }}
+
+    ```
+
+    With change management-related configurations
+    ```hcl
+      {{ include "../../examples/rds-cluster/basic/config/fixtures-with-change-management-config.tfvars" }}
+
+    ```
+
+    With serverless-related configurations (for V1, and V2)
+    ```hcl
+      {{ include "../../examples/rds-cluster/basic/config/fixtures-with-serverless-config-v1.tfvars" }}
+
+    ```
+    ```hcl
+      {{ include "../../examples/rds-cluster/basic/config/fixtures-with-serverless-config-v2.tfvars" }}
+
+    ```
+    And more. Check the [config](./examples/rds-cluster/basic/config) folder for more examples.
+
+
     ---
 
     ## Module's documentation

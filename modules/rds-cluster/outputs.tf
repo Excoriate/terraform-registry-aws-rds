@@ -129,4 +129,3 @@ output "secondary_parameter_group_name" {
   value       = !local.is_enabled ? null : join("", [for cluster in aws_rds_cluster_parameter_group.this : cluster.name if cluster.name != null])
   description = "The secondary parameter group name of the RDS cluster."
 }
-

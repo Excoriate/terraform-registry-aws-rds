@@ -124,5 +124,3 @@ output "secondary_parameter_group_name" {
   value       = module.main_module.secondary_parameter_group_name
   description = "The secondary parameter group name of the RDS cluster."
 }
-
-

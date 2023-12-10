@@ -30,12 +30,14 @@ resource "aws_rds_cluster" "primary" {
   #  manage_master_user_password     = false // It's the master one, so it should be ignored.
   master_password                 = each.value["master_password"] != null ? each.value["master_password"] : random_password.this[each.key].result
   enabled_cloudwatch_logs_exports = each.value["enabled_cloudwatch_logs_exports"]
+  db_cluster_instance_class       = each.value["db_cluster_instance_class"]
 
   ## ---------------------------------------------------------------------------------------------------------------------
   ## SUBNET GROUP CONFIGURATION
   ## It defines the subnet group configuration. Works with a precedence order: subnet_group_name, subnet_ids, vpc_id.
   ## ---------------------------------------------------------------------------------------------------------------------
-  db_subnet_group_name = !lookup(local.ff_resource_create_subnet_group, "create", false) ? null : lookup(local.cluster_subnet_group_config[each.key]["options"], "subnets_from_subgroup_name", false) ? lookup(local.cluster_subnet_group_config[each.key], "subnet_group_name", null) : lookup(local.cluster_subnet_group_config[each.key]["options"], "subnets_from_ids", false) ? aws_db_subnet_group.subnet_group_from_subnet_ids[each.key].name : lookup(local.cluster_subnet_group_config[each.key]["options"], "subnets_from_vpc_id", false) ? aws_db_subnet_group.subnet_group_from_vpc_id[each.key].name : null
+  db_subnet_group_name = lookup(local.ff_resource_create_subnet_group, each.key, null) == null ? null : lookup(local.ff_resource_create_subnet_group[each.key], "subnet_group_name", null) != null ? lookup(local.ff_resource_create_subnet_group[each.key], "subnet_group_name", null) : lookup(local.ff_resource_create_subnet_group[each.key], "subnet_ids", null) != null ? join(",", lookup(local.ff_resource_create_subnet_group[each.key], "subnet_ids", null)) : lookup(local.ff_resource_create_subnet_group[each.key], "vpc_id", null) != null ? aws_db_subnet_group.subnet_group_from_vpc_id[each.key].name : null
+
 
   ## ---------------------------------------------------------------------------------------------------------------------
   ## IAM ROLES CONFIGURATION
@@ -309,4 +311,3 @@ resource "aws_rds_cluster" "secondary" {
 
   tags = var.tags
 }
-

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/Excoriate/terraform-registry-aws-rds/compare/v0.1.0...v0.1.1) (2023-12-15)
+
+
+### Features
+
+* Add support for fetch dynamically subnets for subnet_groups through vpc name ([9f5e90a](https://github.com/Excoriate/terraform-registry-aws-rds/commit/9f5e90afbe498f167463ee1ccfec1c1c8093b883))
+
 ## 0.1.0 (2023-12-14)
 
 

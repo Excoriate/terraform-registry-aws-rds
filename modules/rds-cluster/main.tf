@@ -160,7 +160,7 @@ resource "aws_rds_cluster" "primary" {
     }
   }
 
-  depends_on = [aws_security_group.this, aws_db_subnet_group.subnet_group_from_vpc_id, aws_db_subnet_group.subnet_group_from_subnet_ids, aws_rds_cluster_parameter_group.this]
+  depends_on = [aws_security_group.this, aws_db_subnet_group.subnet_group_from_vpc_id, aws_db_subnet_group.subnet_group_from_subnet_ids, aws_rds_cluster_parameter_group.this, aws_db_subnet_group.subnet_group_from_vpc_name]
 
   tags = var.tags
 }
@@ -307,7 +307,7 @@ resource "aws_rds_cluster" "secondary" {
     ]
   }
 
-  depends_on = [aws_security_group.this, aws_db_subnet_group.subnet_group_from_vpc_id, aws_db_subnet_group.subnet_group_from_subnet_ids, aws_rds_cluster_parameter_group.this]
+  depends_on = [aws_security_group.this, aws_db_subnet_group.subnet_group_from_vpc_id, aws_db_subnet_group.subnet_group_from_subnet_ids, aws_rds_cluster_parameter_group.this, aws_db_subnet_group.subnet_group_from_vpc_name]
 
   tags = var.tags
 }

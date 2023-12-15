@@ -236,6 +236,7 @@ variable "cluster_subnet_group_config" {
     subnet_ids         = optional(list(string))
     subnet_group_name  = optional(string)
     vpc_id             = optional(string)
+    vpc_name           = optional(string)
   })
   default     = null
   description = <<EOF
@@ -247,6 +248,7 @@ variable "cluster_subnet_group_config" {
   - subnet_ids: (Optional) A list of VPC subnet IDs. If the VPC ID is provided, the module will create a subnet group with all the subnets in the VPC.
   - subnet_group_name: (Optional) The name of the DB subnet group. If omitted, Terraform will assign a random, unique name.
   - vpc_id: (Optional) The VPC ID. If the subnet_ids are provided, the module will create a subnet group with all the subnets in the VPC.
+  - vpc_name: (Optional) The VPC name. If the subnet_ids are provided, the module will create a subnet group with all the subnets in the VPC.
 The precedence order is: Subnet_group_name > Subnet_ids > Vpc_id
 EOF
 }

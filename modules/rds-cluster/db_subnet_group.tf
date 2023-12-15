@@ -17,3 +17,11 @@ resource "aws_db_subnet_group" "subnet_group_from_subnet_ids" {
   subnet_ids  = each.value["subnet_ids"]
   tags        = var.tags
 }
+
+resource "aws_db_subnet_group" "subnet_group_from_vpc_name" {
+  for_each    = { for k, v in local.ff_resource_create_subnet_group : k => v if lookup(v, "vpc_name", null) != null }
+  name        = format("%s-%s", each.value["cluster_identifier"], "default-subnet-group")
+  description = format("Subnet group for %s created from subnets from a VPC name given", each.value["cluster_identifier"])
+  subnet_ids  = [for subnet_id in data.aws_subnets.subnet_group_fetch_subnets_by_vpc_name[each.key].ids : subnet_id]
+  tags        = var.tags
+}

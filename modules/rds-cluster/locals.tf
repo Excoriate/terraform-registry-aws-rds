@@ -220,6 +220,7 @@ locals {
         for subnet in var.cluster_subnet_group_config.subnet_ids : trimspace(subnet)
       ]
       vpc_id            = var.cluster_subnet_group_config.vpc_id == null ? null : trimspace(var.cluster_subnet_group_config.vpc_id)
+      vpc_name          = var.cluster_subnet_group_config.vpc_name == null ? null : trimspace(var.cluster_subnet_group_config.vpc_name)
       subnet_group_name = var.cluster_subnet_group_config.subnet_group_name == null ? null : trimspace(var.cluster_subnet_group_config.subnet_group_name)
     }
   ]

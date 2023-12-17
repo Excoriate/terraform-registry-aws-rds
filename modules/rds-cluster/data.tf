@@ -6,20 +6,25 @@ locals {
   ff_data_fetch_vpc_by_name_subnet_groups = { for k, v in local.ff_resource_create_subnet_group : k => v if lookup(v, "vpc_name", null) != null }
 }
 
+## ---------------------------------------------------------------------------------------------------------------------
+## SECURITY GROUPS
+## 1. If the vpc_name is passed, then it's going to fetch the VPC ID from the VPC data source
+## 2. Then the VPC is obtained, it's used to fetch all the subnets from that VPC
+## ---------------------------------------------------------------------------------------------------------------------
 data "aws_subnets" "fetch_subnets_by_vpc_id" {
   for_each = local.ff_data_fetch_subnets_by_vpc_id
   filter {
     name   = "vpc-id"
-    values = [each.value["vpc_id"]]
+    values = [data.aws_vpc.sg_vpc_from_vpc_id[each.key].id]
   }
 }
 
-data "aws_vpc" "vpc_from_vpc_id" {
+data "aws_vpc" "sg_vpc_from_vpc_id" {
   for_each = local.ff_data_fetch_vpc_by_id
   id       = each.value["vpc_id"]
 }
 
-data "aws_vpc" "vpc_from_vpc_name" {
+data "aws_vpc" "sg_vpc_from_vpc_name" {
   for_each = local.ff_data_fetch_vpc_by_name
   filter {
     name   = "tag:Name"

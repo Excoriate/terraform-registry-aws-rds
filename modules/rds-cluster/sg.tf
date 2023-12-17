@@ -7,8 +7,9 @@ resource "aws_security_group" "this" {
   for_each    = local.ff_resource_create_sg
   name        = format("%s-default-sg", each.value["cluster_identifier"])
   description = format("Security group for %s", each.value["cluster_identifier"])
-  vpc_id      = lookup(each.value, "vpc_id", null) != null ? data.aws_vpc.vpc_from_vpc_id[each.key].id : lookup(each.value, "vpc_name", null) != null ? data.aws_vpc.vpc_from_vpc_name[each.key].id : null
+  vpc_id      = lookup(each.value, "vpc_id", null) != null ? data.aws_vpc.sg_vpc_from_vpc_id[each.key].id : lookup(each.value, "vpc_name", null) != null ? data.aws_vpc.sg_vpc_from_vpc_name[each.key].id : null
 }
+
 
 resource "aws_security_group_rule" "allow_inbound_traffic_from_database_members" {
   for_each = { for k, v in local.ff_resource_create_sg : k => v if lookup(v, "allow_traffic_from_database_members", false) }

@@ -38,6 +38,10 @@ module "main_module" {
 
 For module composition, It's recommended to take a look at the module's `outputs` to understand what's available:
 ```hcl
+## ---------------------------------------------------------------------------------------------------------------------
+## GENERAL-PURPOSE OUTPUTS
+## This section contains all the general-purpose outputs of the module.
+## ---------------------------------------------------------------------------------------------------------------------
 output "is_enabled" {
   value       = var.is_enabled
   description = "Whether the module is enabled or not."

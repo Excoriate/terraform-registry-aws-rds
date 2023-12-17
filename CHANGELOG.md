@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3](https://github.com/Excoriate/terraform-registry-aws-rds/compare/v0.1.2...v0.1.3) (2023-12-17)
+
+
+### Bug Fixes
+
+* Subnets and related network data isn't resolved when vpc_id is passed ([aa2c777](https://github.com/Excoriate/terraform-registry-aws-rds/commit/aa2c7770963f619ea600e7ab4fbc231a75ea7238))
+
 ## [0.1.2](https://github.com/Excoriate/terraform-registry-aws-rds/compare/v0.1.1...v0.1.2) (2023-12-17)
 
 

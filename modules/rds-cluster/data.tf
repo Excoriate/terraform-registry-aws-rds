@@ -15,7 +15,7 @@ data "aws_subnets" "fetch_subnets_by_vpc_id" {
   for_each = local.ff_data_fetch_subnets_by_vpc_id
   filter {
     name   = "vpc-id"
-    values = [data.aws_vpc.sg_vpc_from_vpc_id[each.key].id]
+    values = [for vpc in data.aws_vpc.sg_vpc_from_vpc_id : vpc.id if vpc.id == each.value["vpc_id"]]
   }
 }
 
@@ -49,6 +49,6 @@ data "aws_subnets" "subnet_group_fetch_subnets_by_vpc_name" {
   for_each = local.ff_data_fetch_vpc_by_name_subnet_groups
   filter {
     name   = "vpc-id"
-    values = [data.aws_vpc.subnet_group_fetch_vpc_by_vpc_name[each.key].id]
+    values = [for vpc in data.aws_vpc.subnet_group_fetch_vpc_by_vpc_name : vpc.id if vpc.id == data.aws_vpc.subnet_group_fetch_vpc_by_vpc_name[each.key].id]
   }
 }

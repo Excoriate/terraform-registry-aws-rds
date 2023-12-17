@@ -8,6 +8,8 @@ locals {
 
   // Serverless
   ff_cfg_enable_serverless = !lookup(local.cluster_serverless_config, "create", false) ? {} : lookup(local.cluster_serverless_config, "resource", {})
+
+  default_sg_ids = [for sg in aws_security_group.this : sg.id if sg != null]
 }
 
 resource "random_password" "this" {
@@ -135,8 +137,9 @@ resource "aws_rds_cluster" "primary" {
   ## It defines the change management configuration.
   ## ---------------------------------------------------------------------------------------------------------------------
   #  vpc_security_group_ids = local.cfg_additional_security_group_ids
-  vpc_security_group_ids = compact(flatten([join("", [for sg in aws_security_group.this : sg.id if sg != null]), lookup(local.cfg_network_additional_security_group_ids, each.key, [])]))
-  network_type           = !lookup(local.cluster_network_config, "create", false) ? null : lookup(local.cluster_network_config, each.key, null) == null ? null : lookup(local.cluster_network_config[each.key], "network_type", null)
+  vpc_security_group_ids = compact(flatten([local.default_sg_ids, lookup(local.cfg_network_additional_security_group_ids, each.key, null) == null ? [] : [lookup(local.cfg_network_additional_security_group_ids[each.key], "additional_security_group_ids", null)]]))
+
+  network_type = !lookup(local.cluster_network_config, "create", false) ? null : lookup(local.cluster_network_config, each.key, null) == null ? null : lookup(local.cluster_network_config[each.key], "network_type", null)
 
 
   dynamic "timeouts" {
@@ -270,9 +273,7 @@ resource "aws_rds_cluster" "secondary" {
   ## SG & NETWORKING CONFIGURATION
   ## It defines the change management configuration.
   ## ---------------------------------------------------------------------------------------------------------------------
-  #  vpc_security_group_ids = local.cfg_additional_security_group_ids
-  #  vpc_security_group_ids = compact(flatten([aws_security_group.this[each.key].id, lookup(local.cfg_network_additional_security_group_ids, each.key, [])]))
-  vpc_security_group_ids = compact(flatten([join("", [for sg in aws_security_group.this : sg.id if sg != null]), lookup(local.cfg_network_additional_security_group_ids, each.key, [])]))
+  vpc_security_group_ids = compact(flatten([local.default_sg_ids, lookup(local.cfg_network_additional_security_group_ids, each.key, null) == null ? [] : [lookup(local.cfg_network_additional_security_group_ids[each.key], "additional_security_group_ids", null)]]))
   network_type           = !lookup(local.cluster_network_config, "create", false) ? null : lookup(local.cluster_network_config, each.key, null) == null ? null : lookup(local.cluster_network_config[each.key], "network_type", null)
 
 

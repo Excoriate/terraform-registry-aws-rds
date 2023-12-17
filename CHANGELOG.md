@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.2](https://github.com/Excoriate/terraform-registry-aws-rds/compare/v0.1.1...v0.1.2) (2023-12-17)
+
+
+### Features
+
+* Add security group module ([a01c1cb](https://github.com/Excoriate/terraform-registry-aws-rds/commit/a01c1cb058862b401c7e7eb155a51c9507ed6602))
+* Addd logic for dynamic inbound and outbound sg ids ([12f5a05](https://github.com/Excoriate/terraform-registry-aws-rds/commit/12f5a05afbfe37c574bf344f753192c8335a745b))
+
+
+### Docs
+
+* Add missing docs ([b3349a2](https://github.com/Excoriate/terraform-registry-aws-rds/commit/b3349a2fe623da5c951bebd40c0762d81b066296))
+
 ## [0.1.1](https://github.com/Excoriate/terraform-registry-aws-rds/compare/v0.1.0...v0.1.1) (2023-12-15)
 
 

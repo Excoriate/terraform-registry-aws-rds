@@ -22,10 +22,11 @@
 These mono-repo contains a set of Terraform modules and recipes for provisioning AWS RDS resources. The modules are designed to be **composable**, and **opinionated**. The recipes are designed to be **easy to understand**, and **easy to use**.
 In the following table are listed the modules included in this repository:
 
-| Module                                           | Description                                                                               |
-|--------------------------------------------------|-------------------------------------------------------------------------------------------|
-| ✅**Stable** [default](./modules/default)         | Example module (boilerplate/template) module.                                             |
-| ✅**Stable** [rds-cluster](./modules/rds-cluster) | Full battle-tested RDS cluster module (Aurora, Postgres, etc. Single, or Global clusters) |
+| Module                                                 | Description                                                                                                                                                                                                                                                      |
+|--------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ✅**Stable** [default](./modules/default)               | Example module (boilerplate/template) module.                                                                                                                                                                                                                    |
+| ✅**Stable** [rds-cluster](./modules/rds-cluster)       | Full battle-tested RDS cluster module (Aurora, Postgres, etc. Single, or Global clusters)                                                                                                                                                                        |
+| ✅**Stable** [rds-cluster-sg](./modules/rds-cluster-sg) | Special module that create a set of security group rules, and a security group that can be used alongside a RDS-cluster. It's specially designed for serve RDS-related configurations, such as: allowing all the database members of a cluster to see each other |
 
 ---
 

@@ -23,6 +23,12 @@ content: |-
     {{ include "../../examples/rds-cluster-sg/basic/main.tf" }}
     ```
 
+    Also, and advanced version of it with inbound and outbound rules for security group ids is available in the [examples](./examples) folder.
+
+    ```hcl
+    {{ include "../../examples/rds-cluster-sg/advanced/main.tf" }}
+    ```
+
     For module composition, It's recommended to take a look at the module's `outputs` to understand what's available:
     ```hcl
     {{ include "outputs.tf" }}

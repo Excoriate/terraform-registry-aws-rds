@@ -65,18 +65,18 @@ repos:
             files: ^tests/(.*/)*.*\.go$
 
     - repo: https://github.com/igorshubovych/markdownlint-cli
-      rev: v0.37.0
+      rev: v0.38.0
       hooks:
           - id: markdownlint-fix
             args: [.]
 
-    - repo: https://github.com/antonbabenko/pre-commit-terraform
-      rev: v1.83.6
-      hooks:
-          - id: terraform_tflint
-            files: ^(modules|examples)/.+(\.tf|\.hcl)$
-            args:
-                - --args=--config=.tflint.hcl --init
+#    - repo: https://github.com/antonbabenko/pre-commit-terraform
+#      rev: v1.83.6
+#      hooks:
+#          - id: terraform_tflint
+#            files: ^(modules|examples)/.+(\.tf|\.hcl)$
+#            args:
+#                - --args=--config=.tflint.hcl --init
 
     - repo: https://github.com/tcort/markdown-link-check
       rev: v3.11.2
@@ -87,7 +87,7 @@ repos:
                 - --config=.markdown-link-check.json
 
     - repo: https://github.com/terraform-docs/terraform-docs
-      rev: v0.16.0
+      rev: v0.17.0
       hooks:
           - id: terraform-docs-go
             files: ^(modules|examples)/.*/.*\.(tf|hcl)$

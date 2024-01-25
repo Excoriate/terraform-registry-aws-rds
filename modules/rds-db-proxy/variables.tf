@@ -53,3 +53,16 @@ variable "db_proxy_role_config" {
   module will attach the required policies to the role.
 EOF
 }
+
+variable "db_proxy_auth_secrets_config" {
+  type = list(object({
+    name       = string
+    secret_arn = string
+  }))
+  default     = null
+  description = <<EOF
+  The configuration of the database proxy authentication, when the option selected is 'SECRETS'. The following attributes are supported:
+  - name: The name of the database proxy authentication.
+  - secret_arn: The Amazon Resource Name (ARN) representing the secret that the proxy uses to authenticate to the RDS
+EOF
+}

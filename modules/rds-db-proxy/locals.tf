@@ -2,10 +2,11 @@ locals {
   #################################################
   # Feature flags
   #################################################
-  is_enabled                           = var.is_enabled
-  is_db_proxy_enabled                  = !local.is_enabled ? false : var.db_proxy_config != null
-  is_db_proxy_role_config_enabled      = !local.is_enabled ? false : var.db_proxy_role_config != null
-  is_db_proxy_iam_role_default_enabled = !local.is_db_proxy_role_config_enabled
+  is_enabled                              = var.is_enabled
+  is_db_proxy_enabled                     = local.is_enabled && var.db_proxy_config != null
+  is_db_proxy_role_config_enabled         = local.is_db_proxy_enabled && var.db_proxy_role_config != null
+  is_db_proxy_iam_role_default_enabled    = !local.is_db_proxy_role_config_enabled
+  is_db_proxy_auth_secrets_config_enabled = !local.is_enabled ? false : var.db_proxy_auth_secrets_config != null
 
   #################################################
   # Enforced defaults
@@ -29,7 +30,7 @@ locals {
     }
   ]
 
-  db_proxy_config_create = !local.is_db_proxy_enabled ? null : {
+  db_proxy_config_create = !local.is_db_proxy_enabled ? {} : {
     for cfg in local.db_proxy_config_normalised : cfg["name"] => cfg
   }
 
@@ -46,7 +47,25 @@ locals {
     }
   ]
 
-  db_proxy_role_config_create = !local.is_db_proxy_role_config_enabled ? null : {
+  db_proxy_role_config_create = !local.is_db_proxy_role_config_enabled ? {} : {
     for cfg in local.db_proxy_role_config_normalised : cfg["name"] => cfg
   }
+
+  #################################################
+  # Auth Secrets Config
+  #################################################
+  db_proxy_auth_secrets_config_normalised = !local.is_db_proxy_auth_secrets_config_enabled ? [] : [
+    for cfg in var.db_proxy_auth_secrets_config : {
+      name        = trimspace(cfg.name)
+      auth_scheme = "SECRETS"
+      secret_arn  = cfg.secret_arn == null ? null : trimspace(cfg.secret_arn)
+      iam_auth    = false // This line is redundant since auth_scheme is set to "SECRETS"
+      description = format("Secret for RDS Proxy %s", cfg.name)
+    }
+  ]
+
+  // For this particular object, this map isn't required.
+  #  db_proxy_auth_secrets_config_create = !local.is_db_proxy_auth_secrets_config_enabled ? {} : {
+  #    for cfg in local.db_proxy_auth_secrets_config_normalised : cfg["name"] => cfg
+  #  }
 }

@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.1.5](https://github.com/Excoriate/terraform-registry-aws-rds/compare/v0.1.4...v0.1.5) (2024-01-26)
+
+
+### Features
+
+* Add missing outputs, add support for endpoints ([baf1679](https://github.com/Excoriate/terraform-registry-aws-rds/commit/baf1679fdb8d0324d2f111b588a73d7672c58941))
+
+
+### Bug Fixes
+
+* Add required networking configuration ([2494504](https://github.com/Excoriate/terraform-registry-aws-rds/commit/2494504444d70e5ec16d629c931f89eba243d049))
+
+
+### Docs
+
+* Add stable documented module in the main README.md file ([ea9a452](https://github.com/Excoriate/terraform-registry-aws-rds/commit/ea9a452a8e5771c9b0d8a2cbdc370dc30a5ebfa3))
+
 ## [0.1.4](https://github.com/Excoriate/terraform-registry-aws-rds/compare/v0.1.3...v0.1.4) (2024-01-26)
 
 

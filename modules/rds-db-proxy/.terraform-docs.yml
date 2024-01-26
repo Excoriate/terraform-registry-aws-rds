@@ -24,6 +24,16 @@ content: |-
     ```hcl
     {{ include "outputs.tf" }}
     ```
+
+    A basic implementation that includes default target group:
+    ```hcl
+    {{ include "../../examples/rds-db-proxy/basic/config/fixtures-with-default-target-group.tfvars" }}
+    ```
+
+    A basic implementation that includes timeouts:
+    ```hcl
+    {{ include "../../examples/rds-db-proxy/basic/config/fixtures-with-timeouts.tfvars" }}
+    ```
     ---
 
     ## Module's documentation

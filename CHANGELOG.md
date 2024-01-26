@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.1.4](https://github.com/Excoriate/terraform-registry-aws-rds/compare/v0.1.3...v0.1.4) (2024-01-26)
+
+
+### Features
+
+* Add auth block support ([06cb8ee](https://github.com/Excoriate/terraform-registry-aws-rds/commit/06cb8ee5f46f29a5cc9085bac4bec77febeb4326))
+* Add targets ([dedeaee](https://github.com/Excoriate/terraform-registry-aws-rds/commit/dedeaee82b901d8cf12fe651285b642e6f46416f))
+* Add wip db proxy module ([bd5a8c6](https://github.com/Excoriate/terraform-registry-aws-rds/commit/bd5a8c6c8bcd8a2c9cc66bea08d463582743d249))
+* WIP changes on db proxy module ([74a95bf](https://github.com/Excoriate/terraform-registry-aws-rds/commit/74a95bf418f0255ec1c0c6980cd11fa0c7118905))
+
+
+### Other
+
+* Comment temporily failed tflint hook ([f67419b](https://github.com/Excoriate/terraform-registry-aws-rds/commit/f67419b0431f05932fb748b52cb03f61825df20b))
+* Update docs ([a9ee0e9](https://github.com/Excoriate/terraform-registry-aws-rds/commit/a9ee0e90f34f7397e3313c2c8e9ea7e5fcd9527a))
+
+
+### Docs
+
+* Add initial readme ([b3c761d](https://github.com/Excoriate/terraform-registry-aws-rds/commit/b3c761d5cf2296abe2ef5f5cee2ece310569d9d4))
+* Add updated docs ([85032b9](https://github.com/Excoriate/terraform-registry-aws-rds/commit/85032b95da0059d5797df9825ce4853f2c4b1d68))
+* Add updated docs ([f897a41](https://github.com/Excoriate/terraform-registry-aws-rds/commit/f897a417e25158edef208ce831a0ac79ca335f3f))
+
 ## [0.1.3](https://github.com/Excoriate/terraform-registry-aws-rds/compare/v0.1.2...v0.1.3) (2023-12-17)
 
 

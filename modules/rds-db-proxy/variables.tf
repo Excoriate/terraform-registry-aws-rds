@@ -66,3 +66,70 @@ variable "db_proxy_auth_secrets_config" {
   - secret_arn: The Amazon Resource Name (ARN) representing the secret that the proxy uses to authenticate to the RDS
 EOF
 }
+
+variable "db_proxy_timeouts_config" {
+  type = list(object({
+    name   = string
+    create = optional(string, "30m")
+    update = optional(string, "30m")
+    delete = optional(string, "30m")
+  }))
+  default     = null
+  description = <<EOF
+  The timeouts block allows you to specify timeouts for certain actions:
+  - name: The name of the database proxy.
+  - create: (Default 30m) Used for creating the database proxy.
+  - update: (Default 30m) Used for updating the database proxy.
+  - delete: (Default 30m) Used for deleting the database proxy.
+EOF
+}
+
+variable "db_proxy_default_target_group_config" {
+  type = list(object({
+    name = string
+    connection_pool_config = optional(object({
+      connection_borrow_timeout    = optional(number, 120)
+      init_query                   = optional(string)
+      max_connections_percent      = optional(number, 100)
+      max_idle_connections_percent = optional(number, 50)
+      session_pinning_filters      = optional(list(string))
+    }))
+  }))
+  default     = null
+  description = <<EOF
+  The configuration of the database proxy default target group. The following attributes are supported:
+  - name: The name of the database proxy default target group.
+  - connection_pool_config: It's the actual connection pool configuration. It supports the following attributes:
+  - connection_borrow_timeout: The number of seconds for a proxy to wait for a connection to become available in the
+  connection pool. Only applies when the proxy has opened its maximum number of connections and all connections are
+  busy with client sessions.
+  - init_query: One or more SQL statements for the proxy to run when opening each new database connection. Typically used
+  with SET statements to make sure that each connection has identical settings such as time zone and character set.
+  - max_connections_percent: The maximum size of the connection pool for each target in a target group. For Aurora MySQL,
+  it is expressed as a percentage of the max_connections setting for the RDS DB instance or Aurora DB cluster used by
+  the target group.
+  - max_idle_connections_percent: Controls how actively the proxy closes idle database connections in the connection
+  pool. A high value enables the proxy to leave a high percentage of idle connections open. A low value causes the proxy
+  to close idle client connections and return the underlying database connections to the connection pool. For Aurora
+  MySQL, it is expressed as a percentage of the max_connections setting for the RDS DB instance or Aurora DB cluster
+  used by the target group.
+  - session_pinning_filters: Each item in the list represents a class of SQL operations that normally cause all later
+  statements in a session using a proxy to be pinned to the same underlying database connection. Including an item in
+  the list exempts that class of SQL operations from the pinning behavior.
+EOF
+}
+
+variable "db_proxy_target_config" {
+  type = list(object({
+    name                   = string
+    db_instance_identifier = string
+    db_cluster_identifier  = string
+  }))
+  default     = null
+  description = <<EOF
+  The configuration of the database proxy target. The following attributes are supported:
+  - name: The name of the database proxy target.
+  - db_instance_identifier: The identifier for the RDS DB instance or Aurora DB cluster that the proxy connects to.
+  - db_cluster_identifier: The identifier for the RDS DB instance or Aurora DB cluster that the proxy connects to.
+EOF
+}

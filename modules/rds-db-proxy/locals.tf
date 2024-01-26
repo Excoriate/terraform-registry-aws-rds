@@ -2,11 +2,14 @@ locals {
   #################################################
   # Feature flags
   #################################################
-  is_enabled                              = var.is_enabled
-  is_db_proxy_enabled                     = local.is_enabled && var.db_proxy_config != null
-  is_db_proxy_role_config_enabled         = local.is_db_proxy_enabled && var.db_proxy_role_config != null
-  is_db_proxy_iam_role_default_enabled    = !local.is_db_proxy_role_config_enabled
-  is_db_proxy_auth_secrets_config_enabled = !local.is_enabled ? false : var.db_proxy_auth_secrets_config != null
+  is_enabled                                      = var.is_enabled
+  is_db_proxy_enabled                             = local.is_enabled && var.db_proxy_config != null
+  is_db_proxy_role_config_enabled                 = local.is_db_proxy_enabled && var.db_proxy_role_config != null
+  is_db_proxy_iam_role_default_enabled            = !local.is_db_proxy_role_config_enabled
+  is_db_proxy_auth_secrets_config_enabled         = !local.is_enabled ? false : var.db_proxy_auth_secrets_config != null
+  is_db_proxy_timeouts_config_enabled             = !local.is_enabled ? false : var.db_proxy_timeouts_config != null
+  is_db_proxy_default_target_group_config_enabled = !local.is_enabled ? false : var.db_proxy_default_target_group_config != null
+  is_db_proxy_target_enabled                      = !local.is_enabled ? false : var.db_proxy_target_config != null
 
   #################################################
   # Enforced defaults
@@ -15,6 +18,9 @@ locals {
   db_proxy_engine_family_default       = "POSTGRESQL"
   db_proxy_idle_client_timeout_default = 1800
   db_proxy_require_tls_default         = false
+  db_proxy_timeouts_create_default     = "30m"
+  db_proxy_timeouts_update_default     = "30m"
+  db_proxy_timeouts_delete_default     = "30m"
 
 
   #################################################
@@ -68,4 +74,56 @@ locals {
   #  db_proxy_auth_secrets_config_create = !local.is_db_proxy_auth_secrets_config_enabled ? {} : {
   #    for cfg in local.db_proxy_auth_secrets_config_normalised : cfg["name"] => cfg
   #  }
+
+  ####################################
+  # Timeouts
+  ####################################
+  db_proxy_timeouts_config_normalised = !local.is_db_proxy_timeouts_config_enabled ? [] : [
+    for cfg in var.db_proxy_timeouts_config : {
+      name   = trimspace(cfg["name"])
+      create = cfg["create"] == null ? local.db_proxy_timeouts_create_default : cfg["create"]
+      update = cfg["update"] == null ? local.db_proxy_timeouts_update_default : cfg["update"]
+      delete = cfg["delete"] == null ? local.db_proxy_timeouts_delete_default : cfg["delete"]
+    }
+  ]
+
+  #  db_proxy_timeouts_config_create = !local.is_db_proxy_timeouts_config_enabled ? {} : {
+  #    for cfg in local.db_proxy_timeouts_config_normalised : cfg["name"] => cfg
+  #  }
+
+  ####################################
+  # Default Target Group
+  ####################################
+  db_proxy_default_target_group_config_normalised = !local.is_db_proxy_default_target_group_config_enabled ? [] : [
+    for cfg in var.db_proxy_default_target_group_config : {
+      name = trimspace(cfg["name"])
+      connection_pool_config = cfg["connection_pool_config"] == null ? {} : {
+        init_query                   = cfg["connection_pool_config"]["init_query"] == null ? null : trimspace(cfg["connection_pool_config"]["init_query"])
+        max_connections_percent      = cfg["connection_pool_config"]["max_connections_percent"] == null ? null : trimspace(cfg["connection_pool_config"]["max_connections_percent"])
+        max_idle_connections_percent = cfg["connection_pool_config"]["max_idle_connections_percent"] == null ? null : trimspace(cfg["connection_pool_config"]["max_idle_connections_percent"])
+        session_pinning_filters = cfg["connection_pool_config"]["session_pinning_filters"] == null ? null : [
+          for filter in cfg["connection_pool_config"]["session_pinning_filters"] : trimspace(filter)
+        ]
+      }
+    }
+  ]
+
+  db_proxy_default_target_group_config_create = !local.is_db_proxy_default_target_group_config_enabled ? {} : {
+    for cfg in local.db_proxy_default_target_group_config_normalised : cfg["name"] => cfg
+  }
+
+  ####################################
+  # Target
+  ####################################
+  db_proxy_target_config_normalised = !local.is_db_proxy_target_enabled ? [] : [
+    for cfg in var.db_proxy_target_config : {
+      name                   = trimspace(cfg["name"])
+      db_instance_identifier = cfg["db_instance_identifier"] == null ? null : trimspace(cfg["db_instance_identifier"])
+      db_cluster_identifier  = cfg["db_cluster_identifier"] == null ? null : trimspace(cfg["db_cluster_identifier"])
+    }
+  ]
+
+  db_proxy_target_config_create = !local.is_db_proxy_target_enabled ? {} : {
+    for cfg in local.db_proxy_target_config_normalised : cfg["name"] => cfg
+  }
 }

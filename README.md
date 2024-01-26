@@ -27,6 +27,7 @@ In the following table are listed the modules included in this repository:
 | ✅**Stable** [default](./modules/default)               | Example module (boilerplate/template) module.                                                                                                                                                                                                                    |
 | ✅**Stable** [rds-cluster](./modules/rds-cluster)       | Full battle-tested RDS cluster module (Aurora, Postgres, etc. Single, or Global clusters)                                                                                                                                                                        |
 | ✅**Stable** [rds-cluster-sg](./modules/rds-cluster-sg) | Special module that create a set of security group rules, and a security group that can be used alongside a RDS-cluster. It's specially designed for serve RDS-related configurations, such as: allowing all the database members of a cluster to see each other |
+| ✅**Stable** [rds-db-proxy](./modules/rds-db-proxy)     | Full battle-tested RDS DB Proxy module (Aurora, Postgres, etc. Single, or Global clusters)        It also support targets, target groups and endpoints                                                                                                           |
 
 ---
 

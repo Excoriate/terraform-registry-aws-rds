@@ -7,4 +7,5 @@ module "main_module" {
   db_proxy_timeouts_config             = var.db_proxy_timeouts_config
   db_proxy_default_target_group_config = var.db_proxy_default_target_group_config
   db_proxy_target_config               = var.db_proxy_target_config
+  db_proxy_networking_config           = var.db_proxy_networking_config
 }

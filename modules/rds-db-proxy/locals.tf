@@ -10,6 +10,7 @@ locals {
   is_db_proxy_timeouts_config_enabled             = !local.is_enabled ? false : var.db_proxy_timeouts_config != null
   is_db_proxy_default_target_group_config_enabled = !local.is_enabled ? false : var.db_proxy_default_target_group_config != null
   is_db_proxy_target_enabled                      = !local.is_enabled ? false : var.db_proxy_target_config != null
+  is_db_proxy_networking_config_enabled           = !local.is_enabled ? false : var.db_proxy_networking_config != null
 
   #################################################
   # Enforced defaults
@@ -126,4 +127,24 @@ locals {
   db_proxy_target_config_create = !local.is_db_proxy_target_enabled ? {} : {
     for cfg in local.db_proxy_target_config_normalised : cfg["name"] => cfg
   }
+
+  ####################################
+  # Networking config
+  ####################################
+  db_proxy_networking_config_normalised = !local.is_db_proxy_networking_config_enabled ? [] : [
+    for cfg in var.db_proxy_networking_config : {
+      name = trimspace(cfg["name"])
+      vpc_security_group_ids = cfg["vpc_security_group_ids"] == null ? [] : [
+        for sg in cfg["vpc_security_group_ids"] : trimspace(sg)
+      ]
+      vpc_subnet_ids = cfg["vpc_subnet_ids"] == null ? [] : [
+        for subnet in cfg["vpc_subnet_ids"] : trimspace(subnet)
+      ]
+    }
+  ]
+
+  db_proxy_networking_config_create = !local.is_db_proxy_networking_config_enabled ? {} : {
+    for cfg in local.db_proxy_networking_config_normalised : cfg["name"] => cfg
+  }
+
 }

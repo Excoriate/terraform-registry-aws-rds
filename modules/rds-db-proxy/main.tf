@@ -1,13 +1,14 @@
 resource "aws_db_proxy" "this" {
-  for_each            = local.db_proxy_config_create
-  name                = each.value["name"]
-  debug_logging       = each.value["debug_logging"]
-  engine_family       = each.value["engine_family"]
-  idle_client_timeout = each.value["idle_client_timeout"]
-  require_tls         = each.value["require_tls"]
-  role_arn            = local.is_db_proxy_iam_role_default_enabled ? [for arn in aws_iam_role.this : arn.arn][0] : [for arn_passed in local.db_proxy_role_config_create : arn_passed["arn"] if arn_passed["name"] == each.key][0]
-  vpc_subnet_ids      = []
-  tags                = var.tags
+  for_each               = local.db_proxy_config_create
+  name                   = each.value["name"]
+  debug_logging          = each.value["debug_logging"]
+  engine_family          = each.value["engine_family"]
+  idle_client_timeout    = each.value["idle_client_timeout"]
+  require_tls            = each.value["require_tls"]
+  role_arn               = local.is_db_proxy_iam_role_default_enabled ? [for arn in aws_iam_role.this : arn.arn][0] : [for arn_passed in local.db_proxy_role_config_create : arn_passed["arn"] if arn_passed["name"] == each.key][0]
+  vpc_subnet_ids         = !local.is_db_proxy_networking_config_enabled ? [] : local.db_proxy_networking_config_create[each.key]["vpc_subnet_ids"]
+  vpc_security_group_ids = !local.is_db_proxy_networking_config_enabled ? [] : local.db_proxy_networking_config_create[each.key]["vpc_security_group_ids"]
+  tags                   = var.tags
 
   #################################################
   # Auth Secrets Config

@@ -133,3 +133,18 @@ variable "db_proxy_target_config" {
   - db_cluster_identifier: The identifier for the RDS DB instance or Aurora DB cluster that the proxy connects to.
 EOF
 }
+
+variable "db_proxy_networking_config" {
+  type = list(object({
+    name                   = string
+    vpc_security_group_ids = list(string)
+    vpc_subnet_ids         = list(string)
+  }))
+  default     = null
+  description = <<EOF
+  The configuration of the database proxy networking. The following attributes are supported:
+  - name: The name of the database proxy networking.
+  - vpc_security_group_ids: The identifiers of the VPC security groups for this database proxy.
+  - vpc_subnet_ids: The identifiers of the VPC subnets for this database proxy.
+EOF
+}

@@ -66,3 +66,14 @@ resource "aws_db_proxy_target" "this" {
   db_proxy_name          = aws_db_proxy.this[each.key].name
   target_group_name      = aws_db_proxy_default_target_group.this[each.key].name
 }
+
+#################################################
+# Endpoint
+#################################################
+resource "aws_db_proxy_endpoint" "this" {
+  for_each               = local.db_proxy_endpoint_config_create
+  db_proxy_name          = aws_db_proxy.this[each.key].name
+  db_proxy_endpoint_name = format("%s-endpoint", aws_db_proxy.this[each.key].name)
+  vpc_subnet_ids         = each.value["vpc_subnet_ids"]
+  target_role            = each.value["target_role"]
+}

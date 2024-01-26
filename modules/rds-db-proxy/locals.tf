@@ -11,17 +11,19 @@ locals {
   is_db_proxy_default_target_group_config_enabled = !local.is_enabled ? false : var.db_proxy_default_target_group_config != null
   is_db_proxy_target_enabled                      = !local.is_enabled ? false : var.db_proxy_target_config != null
   is_db_proxy_networking_config_enabled           = !local.is_enabled ? false : var.db_proxy_networking_config != null
+  is_db_proxy_endpoint_config_enabled             = !local.is_enabled ? false : var.db_proxy_endpoint_config != null
 
   #################################################
   # Enforced defaults
   #################################################
-  db_proxy_debug_logging_default       = false
-  db_proxy_engine_family_default       = "POSTGRESQL"
-  db_proxy_idle_client_timeout_default = 1800
-  db_proxy_require_tls_default         = false
-  db_proxy_timeouts_create_default     = "30m"
-  db_proxy_timeouts_update_default     = "30m"
-  db_proxy_timeouts_delete_default     = "30m"
+  db_proxy_debug_logging_default        = false
+  db_proxy_engine_family_default        = "POSTGRESQL"
+  db_proxy_idle_client_timeout_default  = 1800
+  db_proxy_require_tls_default          = false
+  db_proxy_timeouts_create_default      = "30m"
+  db_proxy_timeouts_update_default      = "30m"
+  db_proxy_timeouts_delete_default      = "30m"
+  db_proxy_endpoint_target_role_default = "READ_WRITE"
 
 
   #################################################
@@ -147,4 +149,20 @@ locals {
     for cfg in local.db_proxy_networking_config_normalised : cfg["name"] => cfg
   }
 
+  ####################################
+  # Endpoint config
+  ####################################
+  db_proxy_endpoint_config_normalised = !local.is_db_proxy_endpoint_config_enabled ? [] : [
+    for cfg in var.db_proxy_endpoint_config : {
+      name = trimspace(cfg["name"])
+      vpc_subnet_ids = cfg["vpc_subnet_ids"] == null ? [] : [
+        for subnet in cfg["vpc_subnet_ids"] : trimspace(subnet)
+      ]
+      target_role = cfg["target_role"] == null ? local.db_proxy_endpoint_target_role_default : trimspace(cfg["target_role"])
+    }
+  ]
+
+  db_proxy_endpoint_config_create = !local.is_db_proxy_endpoint_config_enabled ? {} : {
+    for cfg in local.db_proxy_endpoint_config_normalised : cfg["name"] => cfg
+  }
 }

@@ -148,3 +148,18 @@ variable "db_proxy_networking_config" {
   - vpc_subnet_ids: The identifiers of the VPC subnets for this database proxy.
 EOF
 }
+
+variable "db_proxy_endpoint_config" {
+  type = list(object({
+    name           = string
+    vpc_subnet_ids = list(string)
+    target_role    = optional(string, "READ_WRITE")
+  }))
+  default     = null
+  description = <<EOF
+  The configuration of the database proxy endpoint. The following attributes are supported:
+  - name: The name of the database proxy endpoint.
+  - vpc_subnet_ids: The identifiers of the VPC subnets for this database proxy endpoint.
+  - target_role: The name of the database proxy endpoint target role. Valid values: READ_WRITE or READ_ONLY.
+EOF
+}
